@@ -16,7 +16,7 @@ def main(times=1000):
     for cnt in tqdm(range(times)):
         poly, ans = genData()
         # print(poly)
-        f = sympy.parse_expr(poly)
+        f = sympy.parse_expr(poly.replace(' ', '').replace('\t', ''))
         strr = execute_java(poly.replace("**", "^"))
         # print(strr)
         try:
@@ -25,12 +25,20 @@ def main(times=1000):
                 # print("AC : " + str(cnt))
                 pass
             else:
-                print("!!WA!! with " + "poly : " + poly + " YOURS: " + strr)
-                return
+                print("!!WA!! with " + "poly : " + poly)
+                print("yours: " + strr)
+                print("sympy: ", end="")
+                print(f)
+                # return
         except Exception as e:
-            #  print(e)
+            print(e)
+            print("!!WA!! with " + "poly : " + poly)
+            print("yours: " + strr)
+            print("sympy: ", end="")
+            print(f)
+            return
             pass
 
 
 if __name__ == '__main__':
-    main(10000)
+    main()

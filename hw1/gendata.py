@@ -1,12 +1,12 @@
 import random
 import sympy
 
-intPool = [0, 1, 2, 3, 4]  # 常量池
-hasWhiteSpace = False  # 是否加入空白字符
-hasLeadZeros = False  # 数字是否有前导零,如果传入sympy的表达式中数字有前导零，sympy将无法识别
-maxTerm = 10  # 表达式中的最大项数
-maxFactor = 3  # 项中最大因子个数
-specialData = ["1", "x-x", "-1"]  # 可以放一些特殊数据
+intPool = [0, 1, 2, 3, 4]           # 常量池
+hasWhiteSpace = True               # 是否加入空白字符
+hasLeadZeros = False                # 数字是否有前导零，如果传入sympy的表达式中数字有前导零，sympy将无法识别
+maxTerm = 10                        # 表达式中的最大项数
+maxFactor = 3                       # 项中最大因子个数
+specialData = ["1", "x-x", "-1"]    # 可以放一些特殊数据
 globalPointer = 0
 
 
@@ -15,17 +15,17 @@ def rd(a, b):
 
 
 def getWhiteSpace():
-    if hasWhiteSpace == False:
+    if not hasWhiteSpace:
         return ""
-    str = ""
+    blankTerm = ""
     cnt = rd(0, 2)
     for i in range(cnt):
         type = rd(0, 1)
         if type == 0:
-            str = str + " "
+            blankTerm = blankTerm + " "
         else:
-            str = str + "\t"
-    return str
+            blankTerm = blankTerm + "\t"
+    return blankTerm
 
 
 def getSymbol():
@@ -41,11 +41,11 @@ def getNum(positive):
     iszero = rd(0, 2)
     for i in range(iszero):
         result = result + "0"
-    if hasLeadZeros == False:
+    if not hasLeadZeros:
         result = ""
     result = result + str(integer)
     if rd(0, 1) == 1:
-        if positive == True:
+        if positive:
             result = "+" + result
         else:
             result = getSymbol() + result
@@ -127,7 +127,8 @@ def genData():
     return str(expr), str(simplifed)
 
 
-x = sympy.Symbol('x')
-fx = "+x**+0*x**0++3++x**+1*+1"
-y = sympy.expand(eval(fx))
-print(y)
+if __name__ == '__main__':
+    x = sympy.Symbol('x')
+    fx = "+x**+0*x**0++3++x**+1*+1"
+    y = sympy.expand(eval(fx))
+    print(y)
