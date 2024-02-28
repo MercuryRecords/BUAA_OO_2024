@@ -1,11 +1,21 @@
 import random
+import re
+
 import sympy
 
-intPool = [0, 1, 2, 3, 4]           # 常量池
-hasWhiteSpace = True               # 是否加入空白字符
-hasLeadZeros = False                # 数字是否有前导零，如果传入sympy的表达式中数字有前导零，sympy将无法识别
-maxTerm = 10                        # 表达式中的最大项数
-maxFactor = 3                       # 项中最大因子个数
+intPool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+           10, 11, 12, 13, 14, 15, 16,
+           2147483647, 5223333333,
+           5423333333,
+           1145141919810,
+           23333333234212332333,
+           23333333233335467543,
+           23495723459823752039
+           ]                        # 常量池
+hasWhiteSpace = True                # 是否加入空白字符
+hasLeadZeros = True                 # 数字是否有前导零，如果传入sympy的表达式中数字有前导零，sympy将无法识别
+maxTerm = 6                         # 表达式中的最大项数
+maxFactor = 4                       # 项中最大因子个数
 specialData = ["1", "x-x", "-1"]    # 可以放一些特殊数据
 globalPointer = 0
 
@@ -35,7 +45,7 @@ def getSymbol():
         return "-"
 
 
-def getNum(positive):
+def getNum(posOnly):
     result = ""
     integer = intPool[rd(0, len(intPool) - 1)]
     iszero = rd(0, 2)
@@ -45,7 +55,7 @@ def getNum(positive):
         result = ""
     result = result + str(integer)
     if rd(0, 1) == 1:
-        if positive:
+        if posOnly:
             result = "+" + result
         else:
             result = getSymbol() + result
@@ -56,17 +66,11 @@ def getNum(positive):
 def getExponent():
     result = "**"
     result = result + getWhiteSpace()
-    case = rd(0, 2)
+    case = rd(0, 8)
     if rd(0, 1) == 1:
         result = result + "+"
-    if case == 0:
-        result = result + "0"
-    elif case == 1:
-        result = result + "1"
-    else:
-        result = result + "2"
-        # result = result + getNum(True)
-    # print("exponent:"+result)
+    result = result + str(case)
+    # print("exponent: " + result)
     return result
 
 
@@ -89,7 +93,7 @@ def getTerm(genExpr):
             result = result + getNum(False)
         elif factor == 1:
             result = result + getPower()
-        elif factor == 2 and genExpr == True:
+        elif factor == 2 and genExpr:
             result = result + getExpr(True)
         else:
             result = result + "0"
@@ -103,11 +107,11 @@ def getExpr(isFactor):
     termNum = rd(1, maxTerm)
     result = getWhiteSpace()
     genExpr = True
-    if isFactor == True:
+    if isFactor:
         genExpr = False
     for i in range(termNum):
         result = result + getSymbol() + getWhiteSpace() + getTerm(genExpr) + getWhiteSpace()
-    if isFactor == True:
+    if isFactor:
         result = "(" + result + ")"
         if rd(0, 1) == 1:
             result = result + getWhiteSpace() + getExponent()
@@ -123,7 +127,8 @@ def genData():
     else:
         expr = getExpr(False)
     x = sympy.Symbol('x')
-    simplifed = sympy.expand(eval(expr))
+    toEval = re.sub(r'\b0+(\d+)\b', r'\1', expr)
+    simplifed = sympy.expand(eval(toEval))
     return str(expr), str(simplifed)
 
 
