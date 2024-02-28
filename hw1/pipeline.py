@@ -1,9 +1,8 @@
-import sympy  # 如果报错显示没有这个包，就需要导入
-from xeger import Xeger
-import random
+import sympy
 import subprocess
-from subprocess import STDOUT, PIPE
+from tqdm import tqdm
 from gendata import genData
+from subprocess import STDOUT, PIPE
 
 
 def execute_java(stdin):
@@ -13,14 +12,8 @@ def execute_java(stdin):
     return stdout.decode().strip()
 
 
-def main():
-    x = sympy.Symbol('x')
-    X = Xeger(limit=10)
-    cnt = 1
-    while True:
-        cnt = cnt + 1
-        if cnt % 1000 == 0:
-            print(cnt)
+def main(times=1000):
+    for cnt in tqdm(range(times)):
         poly, ans = genData()
         # print(poly)
         f = sympy.parse_expr(poly)
@@ -29,7 +22,8 @@ def main():
         try:
             g = sympy.parse_expr(strr.replace("^", "**"))
             if sympy.simplify(f).equals(g):
-                print("AC : " + str(cnt))
+                # print("AC : " + str(cnt))
+                pass
             else:
                 print("!!WA!! with " + "poly : " + poly + " YOURS: " + strr)
                 return
@@ -39,4 +33,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(10000)
