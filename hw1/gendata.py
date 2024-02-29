@@ -14,8 +14,8 @@ intPool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
            ]                        # 常量池
 hasWhiteSpace = True                # 是否加入空白字符
 hasLeadZeros = True                 # 数字是否有前导零，如果传入sympy的表达式中数字有前导零，sympy将无法识别
-maxTerm = 6                         # 表达式中的最大项数
-maxFactor = 4                       # 项中最大因子个数
+maxTerm = 10                        # 表达式中的最大项数
+maxFactor = 5                       # 项中最大因子个数
 specialData = ["1", "x-x", "-1"]    # 可以放一些特殊数据
 globalPointer = 0
 
