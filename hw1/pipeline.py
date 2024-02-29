@@ -16,8 +16,9 @@ def execute_java(stdin, fname):
 
 def main(fname, times=100):
     exprDict = dict()
-    for cnt in tqdm(range(times)):
+    for _ in tqdm(range(times)):
         poly, ans = genData()
+        ans = ans.replace("**", "^").replace(" ", "")
         # print(poly)
         forSympy = re.sub(r'\b0+(\d+)\b', r'\1', poly)
         f = sympy.parse_expr(forSympy)
@@ -27,7 +28,6 @@ def main(fname, times=100):
             g = sympy.parse_expr(strr.replace("^", "**"))
             if sympy.simplify(f).equals(g):
                 # print("AC : " + str(cnt))
-                ans = ans.replace("**", "^").replace(" ", "")
                 exprDict[poly] = (len(strr) / len(ans), ans)
                 # print("x: {:.6f}".format(len(strr) / len(ans)))
                 pass
@@ -35,14 +35,14 @@ def main(fname, times=100):
                 print("!!WA!! with " + "poly : " + poly.replace("**", "^"))
                 print("yours: " + strr)
                 print("sympy: ", end="")
-                print(f)
-                # return
+                print(ans)
+                return
         except Exception as e:
             print(e)
             print("!!WA!! with " + "poly : " + poly.replace("**", "^"))
             print("yours: " + strr)
             print("sympy: ", end="")
-            print(f)
+            print(ans)
             return
             pass
     sorted_exprDict = sorted(exprDict.items(), key=lambda x: x[1][0], reverse=True)
@@ -59,7 +59,7 @@ def main(fname, times=100):
         # print(sorted_exprDict[i][0].replace("**", "^"))
         # print(sorted_exprDict[i][1][1])
         # print(sorted_exprDict[i][1][0])
-    with open('output.json', 'a+') as f:
+    with open('output.json', 'w') as f:
         json.dump(output, f)
 
 
