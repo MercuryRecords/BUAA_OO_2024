@@ -15,8 +15,9 @@ intPool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
 hasWhiteSpace = True                # 是否加入空白字符
 hasLeadZeros = True                 # 数字是否有前导零，如果传入sympy的表达式中数字有前导零，sympy将无法识别
 maxTerm = 10                        # 表达式中的最大项数
-maxFactor = 5                       # 项中最大因子个数
+maxFactor = 10                      # 项中最大因子个数
 specialData = ["1", "x-x", "-1"]    # 可以放一些特殊数据
+dataCost = [1, 2, 2]
 globalPointer = 0
 
 
@@ -48,6 +49,7 @@ def getSymbol():
 def getNum(posOnly):
     result = ""
     integer = intPool[rd(0, len(intPool) - 1)]
+    cost = len(str(integer))
     iszero = rd(0, 2)
     for i in range(iszero):
         result = result + "0"
@@ -60,80 +62,94 @@ def getNum(posOnly):
         else:
             result = getSymbol() + result
             # print("num:"+result)
-    return result
+        cost += 1
+    return result, cost
 
 
 def getExponent():
     result = "**"
     result = result + getWhiteSpace()
     case = rd(0, 8)
+    cost = len(str(case))
     if rd(0, 1) == 1:
         result = result + "+"
+        cost += 1
     result = result + str(case)
     # print("exponent: " + result)
-    return result
+    return result, cost
 
 
 def getPower():
     result = "x"
     if rd(0, 1) == 1:
-        result = result + getWhiteSpace() + getExponent()
+        toAdd, _ = getExponent()
+        result = result + getWhiteSpace() + toAdd
     # print("Power:"+result)
-    return result
+    return result, 1
 
 
 def getTerm(genExpr):
     factorNum = rd(1, maxFactor)
     result = ""
+    cost = 1
     if rd(0, 1) == 1:
         result = getSymbol() + getWhiteSpace()
     for i in range(factorNum):
         factor = rd(0, 2)
         if factor == 0:
-            result = result + getNum(False)
+            toAdd, factorCost = getNum(False)
+            result = result + toAdd
         elif factor == 1:
-            result = result + getPower()
+            toAdd, factorCost = getPower()
+            result = result + toAdd
         elif factor == 2 and genExpr:
-            result = result + getExpr(True)
+            toAdd, factorCost = getExpr(True)
+            result = result + toAdd
         else:
             result = result + "0"
+            factorCost = 1
+        cost *= factorCost
         if i < factorNum - 1:
             result = result + getWhiteSpace() + "*" + getWhiteSpace()
             # print("term:"+result)
-    return result
+    return result, cost
 
 
 def getExpr(isFactor):
     termNum = rd(1, maxTerm)
     result = getWhiteSpace()
+    cost = 0
     genExpr = True
     if isFactor:
         genExpr = False
     for i in range(termNum):
-        result = result + getSymbol() + getWhiteSpace() + getTerm(genExpr) + getWhiteSpace()
+        toAdd, termCost = getTerm(genExpr)
+        result = result + getSymbol() + getWhiteSpace() + toAdd + getWhiteSpace()
+        cost += termCost
     if isFactor:
         result = "(" + result + ")"
         if rd(0, 1) == 1:
-            result = result + getWhiteSpace() + getExponent()
+            toAdd, expCost = getExponent()
+            result = result + getWhiteSpace() + toAdd
+            cost = max(cost, 2) ** max(expCost, 1)
             # print("Expr:"+result)
-    return result
+    return result, cost
 
 
 def genData():
     global globalPointer
     if globalPointer < len(specialData):
         expr = specialData[globalPointer]
+        cost = dataCost[globalPointer]
         globalPointer = globalPointer + 1
     else:
-        expr = getExpr(False)
+        expr, cost = getExpr(False)
     x = sympy.Symbol('x')
     toEval = re.sub(r'\b0+(\d+)\b', r'\1', expr)
     simplifed = sympy.expand(eval(toEval))
-    return str(expr), str(simplifed)
+    return str(expr), str(simplifed).replace("**", "^").replace(" ", ""), cost
 
 
 if __name__ == '__main__':
-    x = sympy.Symbol('x')
-    fx = "+x**+0*x**0++3++x**+1*+1"
-    y = sympy.expand(eval(fx))
-    print(y)
+    while True:
+        poly, ans, cost = genData()
