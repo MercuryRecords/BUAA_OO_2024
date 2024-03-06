@@ -8,6 +8,10 @@ from subprocess import STDOUT, PIPE
 
 
 def execute_java(stdin, fname):
+    # cmd = ['java', '-version']
+    # proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+    # stdout, stderr = proc.communicate()
+    # stdout, stderr = proc.communicate(stdin.encode())
     cmd = ['java', '-jar', fname]
     proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
     stdout, stderr = proc.communicate(stdin.encode())
@@ -66,4 +70,4 @@ def main(fname, times=100):
 
 
 if __name__ == '__main__':
-    main('your_file_name.jar', 100)
+    main('oohomework_2024_21371285_hw_2.jar', 100)
