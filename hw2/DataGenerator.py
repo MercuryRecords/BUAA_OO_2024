@@ -7,6 +7,7 @@ import sympy
 
 class DataGenerator:
     def __init__(self):
+        self.func_list_hed = dict()
         self.func_list_def = dict()
         self.func_list_exp = dict()
         self.intPool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -28,6 +29,7 @@ class DataGenerator:
         self.funcNames = ['f', 'g', 'h']
         self.funcName = 'f'
         self.funcVars = []
+        self.isFunction = False
 
     def rd(self, a, b):
         return random.randint(a, b)
@@ -82,8 +84,8 @@ class DataGenerator:
         # print("exponent: " + result)
         return result, cost
 
-    def getPower(self, isFunction=False):
-        if (isFunction):
+    def getPower(self):
+        if self.isFunction:
             var = self.funcVars
             addNum = len(var)
             case = self.rd(0, addNum - 1)
@@ -99,12 +101,12 @@ class DataGenerator:
         # print("Power:"+result)
         return result, 1
 
-    def getExpoFunc(self, isFunction=False):
+    def getExpoFunc(self):
         result = "exp"
         result += self.getWhiteSpace()
         result += "("
         result += self.getWhiteSpace()
-        toAdd, factorCost = self.getFactor(True, isFunction)
+        toAdd, factorCost = self.getFactor(True)
         result += toAdd
         result += self.getWhiteSpace()
         result += ")"
@@ -113,29 +115,29 @@ class DataGenerator:
         result += toAdd
         return result, 2 ** expCost + factorCost
 
-    def getFactor(self, genExpr, isFunction=False):
+    def getFactor(self, genExpr):
         factor = self.rd(0, 3)
         if factor == 0:
             toAdd, factorCost = self.getNum(False)
         elif factor == 1:
-            toAdd, factorCost = self.getPower(isFunction)
+            toAdd, factorCost = self.getPower()
         elif factor == 2 and genExpr:
-            toAdd, factorCost = self.getExpr(True, isFunction)
+            toAdd, factorCost = self.getExpr(True)
         elif factor == 3:
-            toAdd, factorCost = self.getExpoFunc(isFunction)
+            toAdd, factorCost = self.getExpoFunc()
         else:
             toAdd = "0"
             factorCost = 1
         return toAdd, factorCost
 
-    def getTerm(self, genExpr, isFunction=False):
+    def getTerm(self, genExpr):
         factorNum = self.rd(1, self.maxFactor)
         result = ""
         cost = 1
         if self.rd(0, 1) == 1:
             result = self.getSymbol() + self.getWhiteSpace()
         for i in range(factorNum):
-            toAdd, factorCost = self.getFactor(genExpr, isFunction)
+            toAdd, factorCost = self.getFactor(genExpr)
             result += toAdd
             cost *= factorCost
             if i < factorNum - 1:
@@ -143,7 +145,7 @@ class DataGenerator:
                 # print("term:"+result)
         return result, cost
 
-    def getExpr(self, isFactor, isFunction=False):
+    def getExpr(self, isFactor):
         termNum = self.rd(1, self.maxTerm)
         result = self.getWhiteSpace()
         cost = 0
@@ -151,9 +153,9 @@ class DataGenerator:
         if isFactor:
             genExpr = False
         for i in range(termNum):
-            toAdd, termCost = self.getTerm(genExpr, isFunction)
+            toAdd, termCost = self.getTerm(genExpr)
             result = result + self.getSymbol() + self.getWhiteSpace() + \
-                toAdd + self.getWhiteSpace()
+                     toAdd + self.getWhiteSpace()
             cost += termCost
         if isFactor:
             result = "(" + result + ")"
@@ -164,7 +166,7 @@ class DataGenerator:
                 # print("Expr:"+result)
         return result, cost
 
-    def getFuncDefHand(self, used):
+    def getFuncDefHead(self, used):
         false_keys = [key for key, value in used.items() if not value]
         if false_keys:
             fgh = random.choice(false_keys)
@@ -178,10 +180,11 @@ class DataGenerator:
         addNum = self.rd(0, 2)
         for i in range(0, addNum):
             result += ',' + self.getWhiteSpace() + \
-                to_pick[i + 1] + self.getWhiteSpace()
+                      to_pick[i + 1] + self.getWhiteSpace()
         result += ')'
         temp = list(to_pick)[:addNum + 1]
         self.func_list_def[fgh] = temp
+        self.func_list_hed[fgh] = result
         return result
 
     def genData(self, expr=None, cost=-1):
@@ -203,10 +206,12 @@ class DataGenerator:
         simplified = sympy.expand(expr_sym)
         return str(expr), str(simplified).replace("**", "^").replace(" ", ""), cost
 
-    def getFuncExpHand(self, name, var):
+    def getFuncExpBody(self, name, var):
         self.funcName = name
         self.funcVars = var
-        expr, cost = self.getExpr(True, True)
+        self.isFunction = True
+        expr, cost = self.getExpr(False)
+        self.isFunction = False
         self.func_list_exp[name] = expr
         return str(expr), cost  # 返回函数的表达式部分和cost
 
@@ -214,25 +219,42 @@ class DataGenerator:
         funcNum = self.rd(0, 4)
         for i in range(0, funcNum):
             used = {func_name: False for func_name in self.funcNames}
-            self.getFuncDefHand(used)
+            self.getFuncDefHead(used)
             used[self.funcName] = True
         for name, var in self.func_list_def.items():
-            print(name, var)
-            self.getFuncExpHand(name, var)
+            # print(name, var)
+            self.getFuncExpBody(name, var)
 
         return funcNum  # 返回生成了多少函数
 
+    def getCustomDef(self):
+        ret = ""
+        for _func_name in self.func_list_def.keys():
+            ret += self.func_list_hed[_func_name]
+            ret += self.getWhiteSpace() + '=' + self.getWhiteSpace()
+            ret += self.func_list_exp[_func_name] + '\n'
+        return ret
+
 
 if __name__ == '__main__':
+    output = ""
     DataGenerato = DataGenerator()
-    DataGenerato.generateFunction()
-    print(DataGenerato.func_list_def)
-    print(DataGenerato.func_list_exp)
+    num = DataGenerato.generateFunction()
+    output += str(num) + '\n'
+    output += DataGenerato.getCustomDef()
+    print(output)
+    # print(DataGenerato.func_list_def)
+    # print(DataGenerato.func_list_exp)
+    # for funcName in DataGenerato.func_list_def.keys():
+    #     print(funcName, end=" ")
+    #     print(DataGenerato.func_list_def[funcName], end=" ")
+    #     print(DataGenerato.func_list_exp[funcName].replace("**", "^").replace(" ", "").replace("\t", ""))
+
 # 在生成函数之后记得把global pointer还原为0
-    # text = "(-exp(x)^4*x*+010-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3)*-11*x^7-007*(-+-01*0*exp(x^3)^4)^3*(-exp((+-23333333233335467543*15))^2*x)^+1"
-    # text = "-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
-    # text = "exp(2)*exp(11)^2*exp((-9*4*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
-    # print(text)
-    # poly, ans, cost = genData(text)
-    # print(ans)
-    # pass
+# text = "(-exp(x)^4*x*+010-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3)*-11*x^7-007*(-+-01*0*exp(x^3)^4)^3*(-exp((+-23333333233335467543*15))^2*x)^+1"
+# text = "-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
+# text = "exp(2)*exp(11)^2*exp((-9*4*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
+# print(text)
+# poly, ans, cost = genData(text)
+# print(ans)
+# pass
