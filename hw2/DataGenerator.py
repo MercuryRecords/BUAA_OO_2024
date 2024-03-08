@@ -202,7 +202,7 @@ class DataGenerator:
 
         toEval = re.sub(r'\b0+(\d+)\b', r'\1', expr)
         expr_sym = sympy.sympify(toEval)
-        # expr_sym = sympy.sympify(toEval, locals={'exp': exp})
+        # expr_sym = sympy.simplify(toEval, locals={'exp': exp})
         simplified = sympy.expand(expr_sym)
         return str(expr), str(simplified).replace("**", "^").replace(" ", ""), cost
 
@@ -235,6 +235,18 @@ class DataGenerator:
             ret += self.func_list_exp[_func_name] + '\n'
         return ret
 
+    def parseCustom(self):
+        func_dict = {}
+        for name, params in self.func_list_def.items():
+            symbols = {param: sympy.symbols(param) for param in params}
+            expr_str = self.func_list_exp[name]
+            expr_str = expr_str.replace(" ", "").replace("\t", "")
+            expr_str = re.sub(r'\b0+(\d+)\b', r'\1', expr_str)
+            expr = sympy.parse_expr(expr_str, local_dict=symbols, global_dict=None)
+            func = sympy.lambdify(tuple(symbols.values()), expr)
+            func_dict[name] = func
+        return func_dict
+
 
 if __name__ == '__main__':
     output = ""
@@ -243,6 +255,8 @@ if __name__ == '__main__':
     output += str(num) + '\n'
     output += DataGenerato.getCustomDef()
     print(output)
+    print(DataGenerato.parseCustom())
+
     # print(DataGenerato.func_list_def)
     # print(DataGenerato.func_list_exp)
     # for funcName in DataGenerato.func_list_def.keys():
