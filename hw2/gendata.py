@@ -4,7 +4,7 @@ import re
 
 import sympy
 
-from hw2.sympy_test import evalit_with_timeout
+# from hw2.sympy_test import evalit_with_timeout
 
 intPool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
            10, 11, 12, 13, 14, 15, 16,
@@ -158,6 +158,7 @@ def getExpr(isFactor):
             # print("Expr:"+result)
     return result, cost
 
+
 def getFuncDef():
     case = rd(0, 2)
     name = "fgh"
@@ -197,10 +198,13 @@ def genData(expr=None, cost=-1):
 
 if __name__ == '__main__':
     getFuncDef()
-    text = "(-exp(x)^4*x*+010-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3)*-11*x^7-007*(-+-01*0*exp(x^3)^4)^3*(-exp((+-23333333233335467543*15))^2*x)^+1"
-    text = "-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
-    text = "exp(2)*exp(11)^2*exp((-9*4*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
-    print(text)
-    poly, ans, cost = genData(text)
+    # text = "(-exp(x)^4*x*+010-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3)*-11*x^7-007*(-+-01*0*exp(x^3)^4)^3*(-exp((+-23333333233335467543*15))^2*x)^+1"
+    # text = "-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
+    # text = "exp(2)*exp(11)^2*exp((-9*4*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
+    # text = "exp((2*x^2))"
+    # print(text)
+    poly, ans, cost = genData()
+    print(poly)
     print(ans)
+    print(cost)
     pass

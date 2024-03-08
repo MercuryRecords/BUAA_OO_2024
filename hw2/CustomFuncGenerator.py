@@ -12,8 +12,19 @@ class CustomFuncGenerator(DataGenerator):
         #     toAdd, _ = self.getExponent()
         #     result = result + self.getWhiteSpace() + toAdd
         # print("Power:"+result)
-        cost = 1
-        return "powerFunction", cost
+        var = self.func_list_def[self.funcName]
+        addNum = len(var)
+        case = self.rd(0, var - 1)
+        result = var[case]
+        if self.rd(0, 1) == 1:
+            toAdd, _ = self.getExponent()
+            result = result + self.getWhiteSpace() + toAdd
+        return result, 1
 
-    def getXYZPower(self, fgh):
-        var = self.func_list[fgh]
+
+if __name__ == '__main__':
+    DataGenerato = CustomFuncGenerator()
+    DataGenerato.getFuncDefHand()
+    expr = DataGenerato.getFuncExpHand()
+    print(DataGenerato.func_list_def)
+    print(DataGenerato.func_list_exp)
