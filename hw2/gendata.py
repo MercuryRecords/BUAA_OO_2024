@@ -1,7 +1,10 @@
+import itertools
 import random
 import re
 
 import sympy
+
+from hw2.sympy_test import evalit_with_timeout
 
 intPool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
            10, 11, 12, 13, 14, 15, 16,
@@ -155,6 +158,21 @@ def getExpr(isFactor):
             # print("Expr:"+result)
     return result, cost
 
+def getFuncDef():
+    case = rd(0, 2)
+    name = "fgh"
+    result = name[case]
+    result += getWhiteSpace() + '('
+    case = rd(0, 5)
+    permutation = ['x', 'y', 'z']
+    all_permutation = list(itertools.permutations(permutation))
+    to_pick = all_permutation[case]
+    result += getWhiteSpace() + to_pick[0] + getWhiteSpace()
+    addNum = rd(0, 2)
+    for i in range(0, addNum):
+        result += ',' + getWhiteSpace() + to_pick[i+1] + getWhiteSpace()
+    result += ')'
+
 
 def genData(expr=None, cost=-1):
     global globalPointer
@@ -167,18 +185,21 @@ def genData(expr=None, cost=-1):
             expr, cost = getExpr(False)
     x = sympy.Symbol('x')
 
-    def exp(x):
-        return sympy.sympify("E**(x)", locals={'x': x})
+    # def exp(x):
+    #     return sympy.sympify("E**(x)", locals={'x': x})
 
     toEval = re.sub(r'\b0+(\d+)\b', r'\1', expr)
-    expr_sym = sympy.sympify(toEval, locals={'exp': exp})
+    expr_sym = sympy.sympify(toEval)
+    # expr_sym = sympy.sympify(toEval, locals={'exp': exp})
     simplified = sympy.expand(expr_sym)
     return str(expr), str(simplified).replace("**", "^").replace(" ", ""), cost
 
 
 if __name__ == '__main__':
+    getFuncDef()
     text = "(-exp(x)^4*x*+010-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3)*-11*x^7-007*(-+-01*0*exp(x^3)^4)^3*(-exp((+-23333333233335467543*15))^2*x)^+1"
-    text = "exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
+    text = "-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
+    text = "exp(2)*exp(11)^2*exp((-9*4*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
     print(text)
     poly, ans, cost = genData(text)
     print(ans)

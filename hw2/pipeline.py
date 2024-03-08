@@ -23,20 +23,20 @@ def main(fname, times=100):
     exprDict = dict()
     for _ in tqdm(range(times)):
         poly, ans, cost = genData()
-        print(poly)
+        # print(poly)
         strr = execute_java(poly.replace("**", "^"), fname)
-        print(strr)
+        # print(strr)
         # while cost > 10000:
         #     poly, ans, cost = genData()
         ans = ans.replace("**", "^").replace(" ", "")
         # print(poly)
         forSympy = re.sub(r'\b0+(\d+)\b', r'\1', poly)
-        f = sympy.parse_expr(forSympy)
+        # f = sympy.parse_expr(forSympy)
 
         # print(strr)
         try:
             g = sympy.parse_expr(strr.replace("^", "**"))
-            if sympy.simplify(f).equals(g):
+            if sympy.simplify(ans).equals(g):
                 # print("AC : " + str(cnt))
                 exprDict[poly] = (len(strr) / len(ans), ans)
                 # print("x: {:.6f}".format(len(strr) / len(ans)))
