@@ -9,10 +9,6 @@ from tqdm import tqdm
 
 
 def replaceFunction(stdin):
-    # cmd = ['java', '-version']
-    # proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-    # stdout, stderr = proc.communicate()
-    # stdout, stderr = proc.communicate(stdin.encode())
     cmd = ['java', '-jar', "replace.jar"]
     proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
     stdout, stderr = proc.communicate(stdin.encode())
@@ -21,6 +17,7 @@ def replaceFunction(stdin):
 
 class DataGenerator:
     def __init__(self):
+        self.actual_para_limit = 500
         self.func_list_hed = dict()
         self.func_list_par = dict()
         self.func_list_exp = dict()
@@ -35,8 +32,8 @@ class DataGenerator:
                         ]  # 常量池
         self.hasWhiteSpace = True  # 是否加入空白字符
         self.hasLeadZeros = True  # 数字是否有前导零，如果传入sympy的表达式中数字有前导零，sympy将无法识别
-        self.maxTerm = 3  # 表达式中的最大项数
-        self.maxFactor = 3  # 项中最大因子个数
+        self.maxTerm = 4  # 表达式中的最大项数
+        self.maxFactor = 4  # 项中最大因子个数
         self.specialData = ["1", "x-x", "-1"]  # 可以放一些特殊数据
         self.dataCost = [1, 2, 2]
         self.globalPointer = len(self.specialData)
@@ -122,20 +119,24 @@ class DataGenerator:
         result += "("
         result += self.getWhiteSpace()
         toAdd, factorCost = self.getFactor(True)
+        factorCost += 1
         result += toAdd
         result += self.getWhiteSpace()
         result += ")"
-        result += self.getWhiteSpace()
-        toAdd, expCost = self.getExponent()
-        result += toAdd
-        return result, 2 ** expCost + factorCost
+        if self.rd(0, 1) == 1:
+            toAdd, expCost = self.getExponent()
+            result = result + self.getWhiteSpace() + toAdd
+            factorCost += 2 ** expCost
+        return result, factorCost
 
     def getFuncFactor(self):
+        cost = 1
         name = random.choice(list(self.func_list_par.keys()))
         result = name + self.getWhiteSpace() + '('
         for index, var in enumerate(self.func_list_par[name]):
             result += self.getWhiteSpace()
-            toAdd, factorCost = self.getFactor(True)
+            toAdd, factorCost = self.getFactor(True, True)
+            cost *= factorCost * 2
             result += toAdd
             if index < len(self.func_list_par[name]) - 1:
                 result += ","
@@ -143,7 +144,7 @@ class DataGenerator:
                 result += ")"
         return result, factorCost
 
-    def getFactor(self, genExpr):
+    def getFactor(self, genExpr, asActual=False):
         factor = self.rd(0, 13)
         if factor <= 3:
             toAdd, factorCost = self.getNum(False)
@@ -158,6 +159,21 @@ class DataGenerator:
         else:
             toAdd = "0"
             factorCost = 1
+        while asActual and factorCost > self.actual_para_limit:
+            factor = self.rd(0, 13)
+            if factor <= 3:
+                toAdd, factorCost = self.getNum(False)
+            elif factor <= 7:
+                toAdd, factorCost = self.getPower()
+            elif factor <= 11 and genExpr:
+                toAdd, factorCost = self.getExpr(True)
+            elif factor <= 12:
+                toAdd, factorCost = self.getExpoFunc()
+            elif factor <= 13 and (self.isFunction == False) and (len(self.func_list_par) > 0):
+                toAdd, factorCost = self.getFuncFactor()
+            else:
+                toAdd = "0"
+                factorCost = 1
         return toAdd, factorCost
 
     def getTerm(self, genExpr):
@@ -246,13 +262,14 @@ class DataGenerator:
         self.func_list_exp[name] = expr
         return str(expr), cost  # 返回函数的表达式部分和cost
 
-    def generateFunction(self):
+    def generateFunction(self, length=150, cost_limit=2000):
         self.isFunction = True
         funcNum = self.rd(0, 3)
         self.used = {func_name: False for func_name in self.funcNames}
         for i in range(0, funcNum):
-            func_len = 160
-            while func_len > 150:  # HERE to set func_len_limit
+            func_len = length + 10
+            cost = cost_limit + 10
+            while func_len > length or cost > cost_limit:  # HERE to set func_len_limit
                 false_keys = [key for key, value in self.used.items() if not value]
                 if false_keys:
                     fgh = random.choice(false_keys)
@@ -389,66 +406,3 @@ def main(jar_name_1, jar_name_2, times=100):
 
 if __name__ == '__main__':
     main("oohomework_2024_21371285_hw_2.jar", "oohomework_2024_21371285_hw_2.jar", 1000)
-#     pass
-#     output = ""
-#     DataGenerato = DataGenerator()
-#     num = DataGenerato.generateFunction()
-#     output += str(num) + '\n'
-#     output += DataGenerato.getCustomDef()
-#     print(output, end='')
-#
-#     expr, cost = DataGenerato.getExpr(False)
-#     print(expr)
-#
-#     newExpr = replaceFunction((output+expr).replace("**", "^"))
-#     print(newExpr)
-#
-#     newExpr = newExpr.replace("^", "**")
-#     newExpr = re.sub(r'\b0+(\d+)\b', r'\1', newExpr)
-#     exprAns = sympy.expand(newExpr)
-#     # tmp = sympy.simplify(tmp)
-#     # exprAns = sympy.simplify(sympy.expand(newExpr))
-#
-# # 定义 x 值的范围
-#     x_values = [0, 1, 2]
-#     x = sympy.symbols('x')
-# # 遍历 x 值，求解表达式的值
-#     results = [exprAns.subs(x, x_val) for x_val in x_values]
-#     print(results)
-#     cmd = ['java', '-jar', "oohomework_2024_21371285_hw_2.jar"]
-#     stdin = (output+expr).replace("**", "^")
-#     proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-#     stdout, stderr = proc.communicate(stdin.encode())
-#     yourAns = stdout.decode().strip()
-#     yourExpr = yourAns.replace("^", "**")
-#     yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
-#     yourAnsSym = sympy.expand(yourAns)
-#     yourResults = [yourAnsSym.subs(x, x_val) for x_val in x_values]
-#     print(yourExpr)
-#     print(yourResults)
-#
-#     # func = DataGenerato.parseCustom()
-#     # for name, exp in func.items():
-#     #     var = DataGenerato.func_list_def[name]
-#     #     param = {param: 1 for param in var}
-#     #     symbols = [sympy.symbols(param) for param in param]
-#     #     print(exp(*symbols))
-#     # for name, var in DataGenerato.func_list_def.items():
-#     #     args = [1, 2, 3]
-#     #     print(func[name](*args))
-#
-#     # print(DataGenerato.func_list_def)
-#     # print(DataGenerato.func_list_exp)
-#     # for funcName in DataGenerato.func_list_def.keys():
-#     #     print(funcName, end=" ")
-#     #     print(DataGenerato.func_list_def[funcName], end=" ")
-#     #     print(DataGenerato.func_list_exp[funcName].replace("**", "^").replace(" ", "").replace("\t", ""))
-#
-# # 在生成函数之后记得把global pointer还原为0
-# # text = "(-exp(x)^4*x*+010-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3)*-11*x^7-007*(-+-01*0*exp(x^3)^4)^3*(-exp((+-23333333233335467543*15))^2*x)^+1"
-# # text = "-exp(+13)^+1*exp((+0016*012))^8*exp((-0023495723459823752039*004*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
-# # text = "exp(2)*exp(11)^2*exp((-9*4*x++exp(exp(-23333333233335467543)^3)^3*+9*-005-exp(x^8)^+5))^3"
-# # print(text)
-# # poly, ans, cost = genData(text)
-# # print(ans)
-# # pass

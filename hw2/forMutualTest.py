@@ -1,18 +1,23 @@
+import datetime
 import multiprocessing
 import os
 import re
+import signal
 import subprocess
-
 import sympy
 from tqdm import tqdm
-
 from DataGenerator import DataGenerator
 
 x_values = [0, 1, 2]
 x = sympy.symbols('x')
 
+EXPRESSION_LENGTH = 50
+EXPRESSION_COST = 5000
+FUNCTION_LENGTH = 30
+FUNCTION_COST = 2000
 
-def compare(stdin, jar_names=None):
+
+def compare(stdin, jar_names, checker):
     expr_dict = dict()
     expr_list = list()
 
@@ -21,6 +26,20 @@ def compare(stdin, jar_names=None):
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = proc.communicate(stdin.encode())
         yourAns = stdout.decode().strip()
+        proc.terminate()
+        proc.wait()
+        os.killpg(proc.pid, signal.SIGTERM)
+
+        # for format
+        cmd = ['java', '-jar', checker]
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output = '0\n' + yourAns
+        stdout, stderr = proc.communicate(output.encode())
+        yourAns = stdout.decode().strip()
+        proc.terminate()
+        proc.wait()
+        os.killpg(proc.pid, signal.SIGTERM)
+
         yourExpr = yourAns.replace("^", "**")
         yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
         exprAns = sympy.expand_multinomial(yourAns)
@@ -37,26 +56,32 @@ def compare(stdin, jar_names=None):
     return True
 
 
-def compare_with_timeout(jar_names=None):
-    output = ""
-    DataGenerato = DataGenerator()
-    num = DataGenerato.generateFunction()
-    output += str(num) + '\n'
-    output += DataGenerato.getCustomDef()
+def compare_with_timeout(checker, jar_names=None):
+    _input = ""
+    while _input == "":
+        try:
+            output = ""
+            DataGenerato = DataGenerator()
+            num = DataGenerato.generateFunction(FUNCTION_LENGTH, FUNCTION_COST)
+            output += str(num) + '\n'
+            output += DataGenerato.getCustomDef()
 
-    expr_len = 210
-    while expr_len > 200:
-        expr, cost = DataGenerato.getExpr(False)
-        expr_len = len(expr.replace("**", "^").replace(" ", "").replace("\t", ""))
+            expr_len = EXPRESSION_LENGTH + 10
+            cost = EXPRESSION_COST + 10
+            while expr_len > EXPRESSION_LENGTH or cost > EXPRESSION_COST:
+                expr, cost = DataGenerato.getExpr(False)
+                expr_len = len(expr.replace("**", "^").replace(" ", "").replace("\t", ""))
 
-    input = (output + expr).replace("**", "^")
+            _input = (output + expr).replace("**", "^")
+        except Exception:
+            pass
 
     timeout = 10 * len(jar_names)
 
     with multiprocessing.Pool(processes=1) as pool:
-        async_result = pool.apply_async(compare, (input, jar_names,))
+        async_result = pool.apply_async(compare, (_input, jar_names, checker,))
         try:
-            result = (async_result.get(timeout), input, cost)
+            result = (async_result.get(timeout), _input, cost)
             pass
         except multiprocessing.TimeoutError:
             # print('OverTime..')
@@ -71,16 +96,21 @@ def compare_with_timeout(jar_names=None):
             return result
 
 
-def main(times=100):
+def main(format_checker, times=100):
     files_and_dirs = os.listdir('.')
-    jar_names = [f for f in files_and_dirs if f.endswith('.jar')]
+    jar_names = [f for f in files_and_dirs if f.endswith('.jar') and f != format_checker]
+    print(len(jar_names))
     for i in tqdm(range(times), position=0):
-        isSame, stdin, cost = compare_with_timeout(jar_names)
+        isSame, stdin, cost = compare_with_timeout(format_checker, jar_names)
         if isSame is not None and isSame == False:
-            print(cost)
-            print(stdin)
+            time_str = datetime.datetime.now.strftime("%Y-%m-%d_%H-%M-%S")
+            filename = f"{cost}_at_{time_str}.txt"
+            with open(filename, 'w') as f:
+                f.write(stdin)
+            # print(cost)
+            # print(stdin)
             break
 
 
 if __name__ == '__main__':
-    main(1000)
+    main('checker.jar', 1000)
