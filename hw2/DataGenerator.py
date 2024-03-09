@@ -1,8 +1,9 @@
 import itertools
 import random
 import re
-
+import subprocess
 import sympy
+from subprocess import STDOUT, PIPE
 
 
 class DataGenerator:
@@ -115,16 +116,31 @@ class DataGenerator:
         result += toAdd
         return result, 2 ** expCost + factorCost
 
+    def getFuncFactor(self):
+        name = random.choice(list(self.func_list_def.keys()))
+        result = name+self.getWhiteSpace()+'('
+        for index, var in enumerate(self.func_list_def[name]):
+            result += self.getWhiteSpace()
+            toAdd, factorCost = self.getFactor(True)
+            result += toAdd
+            if index < len(self.func_list_def[name]) - 1:
+                result += ","
+            else:
+                result += ")"
+        return result, factorCost
+
     def getFactor(self, genExpr):
-        factor = self.rd(0, 3)
-        if factor == 0:
+        factor = self.rd(0, 13)
+        if factor <= 3:
             toAdd, factorCost = self.getNum(False)
-        elif factor == 1:
+        elif factor <= 7:
             toAdd, factorCost = self.getPower()
-        elif factor == 2 and genExpr:
+        elif factor <= 11 and genExpr:
             toAdd, factorCost = self.getExpr(True)
-        elif factor == 3:
+        elif factor <= 12:
             toAdd, factorCost = self.getExpoFunc()
+        elif factor <= 13 and (self.isFunction == False) and (len(self.func_list_def) > 0):
+            toAdd, factorCost = self.getFuncFactor()
         else:
             toAdd = "0"
             factorCost = 1
@@ -155,7 +171,7 @@ class DataGenerator:
         for i in range(termNum):
             toAdd, termCost = self.getTerm(genExpr)
             result = result + self.getSymbol() + self.getWhiteSpace() + \
-                     toAdd + self.getWhiteSpace()
+                toAdd + self.getWhiteSpace()
             cost += termCost
         if isFactor:
             result = "(" + result + ")"
@@ -170,6 +186,7 @@ class DataGenerator:
         false_keys = [key for key, value in used.items() if not value]
         if false_keys:
             fgh = random.choice(false_keys)
+        self.funcName = fgh
         result = fgh
         result += self.getWhiteSpace() + '('
         case = self.rd(0, 5)
@@ -216,9 +233,9 @@ class DataGenerator:
         return str(expr), cost  # 返回函数的表达式部分和cost
 
     def generateFunction(self):
-        funcNum = self.rd(0, 4)
+        funcNum = self.rd(0, 3)
+        used = {func_name: False for func_name in self.funcNames}
         for i in range(0, funcNum):
-            used = {func_name: False for func_name in self.funcNames}
             self.getFuncDefHead(used)
             used[self.funcName] = True
         for name, var in self.func_list_def.items():
@@ -226,6 +243,16 @@ class DataGenerator:
             self.getFuncExpBody(name, var)
 
         return funcNum  # 返回生成了多少函数
+
+    def replaceFunction(self, stdin):
+        # cmd = ['java', '-version']
+        # proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+        # stdout, stderr = proc.communicate()
+        # stdout, stderr = proc.communicate(stdin.encode())
+        cmd = ['java', '-jar', "replace.jar"]
+        proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+        stdout, stderr = proc.communicate(stdin.encode())
+        return stdout.decode().strip()
 
     def getCustomDef(self):
         ret = ""
@@ -236,13 +263,14 @@ class DataGenerator:
         return ret
 
     def parseCustom(self):
-        func_dict = {}
+        func_dict = dict()
         for name, params in self.func_list_def.items():
             symbols = {param: sympy.symbols(param) for param in params}
             expr_str = self.func_list_exp[name]
             expr_str = expr_str.replace(" ", "").replace("\t", "")
             expr_str = re.sub(r'\b0+(\d+)\b', r'\1', expr_str)
-            expr = sympy.parse_expr(expr_str, local_dict=symbols, global_dict=None)
+            expr = sympy.parse_expr(
+                expr_str, local_dict=symbols, global_dict=None)
             func = sympy.lambdify(tuple(symbols.values()), expr)
             func_dict[name] = func
         return func_dict
@@ -254,8 +282,45 @@ if __name__ == '__main__':
     num = DataGenerato.generateFunction()
     output += str(num) + '\n'
     output += DataGenerato.getCustomDef()
-    print(output)
-    print(DataGenerato.parseCustom())
+    print(output, end='')
+
+    expr, cost = DataGenerato.getExpr(False)
+    print(expr)
+
+    newExpr = DataGenerato.replaceFunction((output+expr).replace("**", "^"))
+    print(newExpr)
+
+    newExpr = newExpr.replace("^", "**")
+    newExpr = re.sub(r'\b0+(\d+)\b', r'\1', newExpr)
+    exprAns = sympy.simplify(sympy.expand(newExpr))
+
+# 定义 x 值的范围
+    x_values = [0, 1]
+    x = sympy.symbols('x')
+# 遍历 x 值，求解表达式的值
+    results = [exprAns.subs(x, x_val) for x_val in x_values]
+    print(results)
+    cmd = ['java', '-jar', "Seravee.jar"]
+    stdin = (output+expr).replace("**", "^")
+    proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+    stdout, stderr = proc.communicate(stdin.encode())
+    yourAns = stdout.decode().strip()
+    yourExpr = yourAns.replace("^", "**")
+    yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
+    yourAnsSym = sympy.sympify(yourAns)
+    yourResults = [yourAnsSym.subs(x, x_val) for x_val in x_values]
+    print(yourExpr)
+    print(yourResults)
+
+    # func = DataGenerato.parseCustom()
+    # for name, exp in func.items():
+    #     var = DataGenerato.func_list_def[name]
+    #     param = {param: 1 for param in var}
+    #     symbols = [sympy.symbols(param) for param in param]
+    #     print(exp(*symbols))
+    # for name, var in DataGenerato.func_list_def.items():
+    #     args = [1, 2, 3]
+    #     print(func[name](*args))
 
     # print(DataGenerato.func_list_def)
     # print(DataGenerato.func_list_exp)
