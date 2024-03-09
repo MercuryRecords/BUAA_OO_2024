@@ -365,10 +365,10 @@ def compare_with_timeout(jar_name1, jar_name_2, timeout=10):
             pass
         except multiprocessing.TimeoutError:
             # print('OverTime..')
-            result = (None,) * 7
+            result = (None,) * 6
         except Exception:
             # print('ReStart..')
-            result = (None,) * 7
+            result = (None,) * 6
         finally:
             pool.close()  # 关闭进程池
         return result
