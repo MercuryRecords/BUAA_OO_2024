@@ -1,7 +1,9 @@
 import itertools
 import multiprocessing
+import os
 import random
 import re
+import signal
 import subprocess
 import sympy
 from subprocess import STDOUT, PIPE
@@ -354,6 +356,9 @@ def compare(jar_name_1, jar_name_2):
     proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
     stdout, stderr = proc.communicate(stdin.encode())
     yourAns = stdout.decode().strip()
+    proc.terminate()
+    proc.wait()
+    os.killpg(proc.pid, signal.SIGTERM)
     yourExpr = yourAns.replace("^", "**")
     yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
     exprAns = sympy.expand_multinomial(yourAns)
@@ -365,6 +370,9 @@ def compare(jar_name_1, jar_name_2):
     stdout, stderr = proc.communicate(stdin.encode())
     yourAns = stdout.decode().strip()
     yourExpr = yourAns.replace("^", "**")
+    proc.terminate()
+    proc.wait()
+    os.killpg(proc.pid, signal.SIGTERM)
     yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
     yourAnsSym = sympy.expand_multinomial(yourAns)
     yourResults = [yourAnsSym.subs(x, x_val) for x_val in x_values]
@@ -405,4 +413,4 @@ def main(jar_name_1, jar_name_2, times=100):
 
 
 if __name__ == '__main__':
-    main("oohomework_2024_21371285_hw_2.jar", "oohomework_2024_21371285_hw_2.jar", 1000)
+    main("oohomework_2024_21371285_hw_2.jar", "checker.jar", 1000)
