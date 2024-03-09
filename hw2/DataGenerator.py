@@ -1,10 +1,10 @@
 import itertools
+import multiprocessing
 import random
 import re
 import subprocess
 import sympy
 from subprocess import STDOUT, PIPE
-
 from tqdm import tqdm
 
 
@@ -312,76 +312,83 @@ class DataGenerator:
         return func_dict
 
 
-def compare(jar_name='oohomework_2024_21371285_hw_2.jar'):
+def compare(jar_name_1, jar_name_2):
+    x_values = [0, 1, 2]
+    x = sympy.symbols('x')
     output = ""
     DataGenerato = DataGenerator()
     num = DataGenerato.generateFunction()
     output += str(num) + '\n'
     output += DataGenerato.getCustomDef()
-    # print(output, end='')
 
     expr_len = 210
     while expr_len > 200:
         expr, cost = DataGenerato.getExpr(False)
         expr_len = len(expr.replace("**", "^").replace(" ", "").replace("\t", ""))
 
-    newExpr = replaceFunction((output + expr).replace("**", "^"))
-    # print(newExpr)
+    # newExpr = replaceFunction((output + expr).replace("**", "^"))
+    # newExpr = newExpr.replace("^", "**")
+    # newExpr = re.sub(r'\b0+(\d+)\b', r'\1', newExpr)
+    #  = sympy.expand_multinomial(newExpr)
+    # results = [exprAns.subs(x, x_val) for x_val in x_values]
 
-    newExpr = newExpr.replace("^", "**")
-    newExpr = re.sub(r'\b0+(\d+)\b', r'\1', newExpr)
-    exprAns = sympy.expand(newExpr)
-    # tmp = sympy.simplify(tmp)
-    # exprAns = sympy.simplify(sympy.expand(newExpr))
-
-    # 定义 x 值的范围
-    x_values = [0, 1, 2]
-    x = sympy.symbols('x')
-    # 遍历 x 值，求解表达式的值
-    error = False
-    try:
-        results = [exprAns.subs(x, x_val) for x_val in x_values]
-    except OverflowError:
-        results = list()
-        error = True
-    # print(results)
-    # pass
-    cmd = ['java', '-jar', jar_name]
+    cmd = ['java', '-jar', jar_name_1]
     stdin = (output + expr).replace("**", "^")
     proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
     stdout, stderr = proc.communicate(stdin.encode())
     yourAns = stdout.decode().strip()
     yourExpr = yourAns.replace("^", "**")
     yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
-    yourAnsSym = sympy.expand(yourAns)
-    try:
-        yourResults = [yourAnsSym.subs(x, x_val) for x_val in x_values]
-    except OverflowError:
-        yourResults = list()
-        error = True
-    # yourResults = [yourAnsSym.subs(x, x_val) for x_val in x_values]
-    # print(yourExpr)
-    # print(yourResults)
+    exprAns = sympy.expand_multinomial(yourAns)
+    results = [exprAns.subs(x, x_val) for x_val in x_values]
 
-    # print(yourResults == results)
+    cmd = ['java', '-jar', jar_name_2]
+    stdin = (output + expr).replace("**", "^")
+    proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+    stdout, stderr = proc.communicate(stdin.encode())
+    yourAns = stdout.decode().strip()
+    yourExpr = yourAns.replace("^", "**")
+    yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
+    yourAnsSym = sympy.expand_multinomial(yourAns)
+    yourResults = [yourAnsSym.subs(x, x_val) for x_val in x_values]
 
-    return stdin, exprAns, cost, yourResults == results, yourResults, results, error
+    tmp = [a - b for a, b in zip(results, yourResults)]
+
+    return stdin, cost, yourResults == results, yourResults, results, 1
+
+
+def compare_with_timeout(jar_name1, jar_name_2, timeout=10):
+    with multiprocessing.Pool(processes=1) as pool:
+        async_result = pool.apply_async(compare, (jar_name1, jar_name_2,))
+        try:
+            result = async_result.get(timeout)
+            pass
+        except multiprocessing.TimeoutError:
+            # print('OverTime..')
+            result = (None,) * 7
+        except Exception:
+            # print('ReStart..')
+            result = (None,) * 7
+        finally:
+            pool.close()  # 关闭进程池
+        return result
+
+
+def main(jar_name_1, jar_name_2, times=100):
+    for i in tqdm(range(times), position=0):
+        stdin, cost, isSame, firsts, seconds, restart = compare_with_timeout(jar_name_1, jar_name_2)
+        if restart is None:
+            continue
+        if not isSame:
+            print(firsts)
+            print(seconds)
+            print(cost)
+            print(stdin)
+            break
 
 
 if __name__ == '__main__':
-    same = True
-    for i in tqdm(range(1000)):
-        stdin, ans, cost, isSame, yours, syms, restart = compare()
-        if restart:
-            i -= 1
-            continue
-        if not isSame:
-            print(yours)
-            print(syms)
-            print(cost)
-            print(stdin)
-            print(ans)
-            break
+    main("oohomework_2024_21371285_hw_2.jar", "oohomework_2024_21371285_hw_2.jar", 1000)
 #     pass
 #     output = ""
 #     DataGenerato = DataGenerator()
