@@ -34,8 +34,8 @@ class DataGenerator:
                         ]  # 常量池
         self.hasWhiteSpace = True  # 是否加入空白字符
         self.hasLeadZeros = True  # 数字是否有前导零，如果传入sympy的表达式中数字有前导零，sympy将无法识别
-        self.maxTerm = 4  # 表达式中的最大项数
-        self.maxFactor = 4  # 项中最大因子个数
+        self.maxTerm = 3  # 表达式中的最大项数
+        self.maxFactor = 2  # 项中最大因子个数
         self.specialData = ["1", "x-x", "-1"]  # 可以放一些特殊数据
         self.dataCost = [1, 2, 2]
         self.globalPointer = len(self.specialData)

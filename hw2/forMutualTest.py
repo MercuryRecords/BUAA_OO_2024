@@ -102,7 +102,7 @@ def main(format_checker, times=100):
     for i in tqdm(range(times), position=0):
         isSame, stdin, cost = compare_with_timeout(format_checker, jar_names)
         if isSame is not None and isSame == False:
-            time_str = datetime.datetime.now.strftime("%Y-%m-%d_%H-%M-%S")
+            time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             filename = f"{cost}_at_{time_str}.txt"
             with open(filename, 'w') as f:
                 f.write(stdin)
