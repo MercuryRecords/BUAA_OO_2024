@@ -2,6 +2,7 @@ import datetime
 import multiprocessing
 import os
 import re
+import signal
 import subprocess
 import sympy
 from tqdm import tqdm
@@ -42,6 +43,7 @@ def compare(stdin, jar_names, checker):
         yourExpr = yourAns.replace("^", "**")
         yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
         exprAns = sympy.expand_multinomial(yourAns)
+        print(jar_name + " : " + str(exprAns))
         results = [exprAns.subs(x, x_val) for x_val in x_values]
         # return exprAns
         return results
@@ -55,8 +57,7 @@ def compare(stdin, jar_names, checker):
     return True
 
 
-def compare_with_timeout(checker, jar_names=None):
-    _input = ""
+def compare_with_timeout(checker, jar_names=None, _input="", cost=0):
     while _input == "":
         try:
             output = ""
@@ -76,23 +77,23 @@ def compare_with_timeout(checker, jar_names=None):
             pass
 
     timeout = 10 * len(jar_names)
-
-    with multiprocessing.Pool(processes=1) as pool:
-        async_result = pool.apply_async(compare, (_input, jar_names, checker,))
-        try:
-            result = (async_result.get(timeout), _input, cost)
-            pass
-        except multiprocessing.TimeoutError:
-            # print('OverTime..')
-            result = (None,) * 3
-        except subprocess.CalledProcessError as e:
-            print(e.stderr)
-            result = (None,) * 3
-        except Exception:
-            result = (None,) * 3
-        finally:
-            pool.close()  # 关闭进程池
-            return result
+    compare(_input, jar_names, checker)
+    # with multiprocessing.Pool(processes=1) as pool:
+    #     async_result = pool.apply_async(compare, (_input, jar_names, checker,))
+    #     try:
+    #         result = (async_result.get(timeout), _input, cost)
+    #         pass
+    #     except multiprocessing.TimeoutError:
+    #         # print('OverTime..')
+    #         result = (None,) * 3
+    #     except subprocess.CalledProcessError as e:
+    #         print(e.stderr)
+    #         result = (None,) * 3
+    #     except Exception:
+    #         result = (None,) * 3
+    #     finally:
+    #         pool.close()  # 关闭进程池
+    #         return result
 
 
 def main(format_checker, times=100):
@@ -112,4 +113,11 @@ def main(format_checker, times=100):
 
 
 if __name__ == '__main__':
-    main('checker.jar', 1000)
+    # main('checker.jar', 1000)
+    files_and_dirs = os.listdir('.')
+    jar_names = [f for f in files_and_dirs if f.endswith('.jar') and f != "checker.jar"]
+    print(len(jar_names))
+    text = ("1\n"
+            "h(x)=x^2\n"
+            "(h(h(x)))^8")
+    compare_with_timeout("checker.jar", jar_names, _input=text)
