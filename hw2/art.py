@@ -1,24 +1,8 @@
-import datetime
-import multiprocessing
 import os
-import re
-import signal
 import subprocess
-import sympy
-from tqdm import tqdm
-from DataGenerator import DataGenerator
-
-x_values = [0, 1, 2]
-x = sympy.symbols('x')
-
-EXPRESSION_LENGTH = 50
-EXPRESSION_COST = 5000
-FUNCTION_LENGTH = 30
-FUNCTION_COST = 2000
 
 
-def compare(stdin, jar_names, checker):
-    expr_dict = dict()
+def compare(stdin, jar_names):
     expr_list = list()
 
     def exec_jar(jar_name):
@@ -29,24 +13,8 @@ def compare(stdin, jar_names, checker):
         proc.terminate()
         proc.wait()
         proc.kill()
-
-        # for format
-        cmd = ['java', '-jar', checker]
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output = '0\n' + yourAns
-        stdout, stderr = proc.communicate(output.encode())
-        yourAns = stdout.decode().strip()
-        proc.terminate()
-        proc.wait()
-        proc.kill()
-
-        yourExpr = yourAns.replace("^", "**")
-        yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
-        exprAns = sympy.expand_multinomial(yourAns)
-        print(jar_name + " : " + str(exprAns))
-        results = [exprAns.subs(x, x_val) for x_val in x_values]
-        # return exprAns
-        return results
+        print(jar_name + " : " + str(yourAns))
+        return yourAns
 
     for fname in jar_names:
         expr_list.append(exec_jar(fname))
@@ -57,67 +25,10 @@ def compare(stdin, jar_names, checker):
     return True
 
 
-def compare_with_timeout(checker, jar_names=None, _input="", cost=0):
-    while _input == "":
-        try:
-            output = ""
-            DataGenerato = DataGenerator()
-            num = DataGenerato.generateFunction(FUNCTION_LENGTH, FUNCTION_COST)
-            output += str(num) + '\n'
-            output += DataGenerato.getCustomDef()
-
-            expr_len = EXPRESSION_LENGTH + 10
-            cost = EXPRESSION_COST + 10
-            while expr_len > EXPRESSION_LENGTH or cost > EXPRESSION_COST:
-                expr, cost = DataGenerato.getExpr(False)
-                expr_len = len(expr.replace("**", "^").replace(" ", "").replace("\t", ""))
-
-            _input = (output + expr).replace("**", "^")
-        except Exception:
-            pass
-
-    timeout = 10 * len(jar_names)
-    compare(_input, jar_names, checker)
-    # with multiprocessing.Pool(processes=1) as pool:
-    #     async_result = pool.apply_async(compare, (_input, jar_names, checker,))
-    #     try:
-    #         result = (async_result.get(timeout), _input, cost)
-    #         pass
-    #     except multiprocessing.TimeoutError:
-    #         # print('OverTime..')
-    #         result = (None,) * 3
-    #     except subprocess.CalledProcessError as e:
-    #         print(e.stderr)
-    #         result = (None,) * 3
-    #     except Exception:
-    #         result = (None,) * 3
-    #     finally:
-    #         pool.close()  # 关闭进程池
-    #         return result
-
-
-def main(format_checker, times=100):
-    files_and_dirs = os.listdir('.')
-    jar_names = [f for f in files_and_dirs if f.endswith('.jar') and f != format_checker]
-    print(len(jar_names))
-    for i in tqdm(range(times), position=0):
-        isSame, stdin, cost = compare_with_timeout(format_checker, jar_names)
-        if isSame is not None and isSame == False:
-            time_str = datetime.datetime.now.strftime("%Y-%m-%d_%H-%M-%S")
-            filename = f"{cost}_at_{time_str}.txt"
-            with open(filename, 'w') as f:
-                f.write(stdin)
-            # print(cost)
-            # print(stdin)
-            break
-
-
 if __name__ == '__main__':
-    # main('checker.jar', 1000)
     files_and_dirs = os.listdir('.')
-    jar_names = [f for f in files_and_dirs if f.endswith('.jar') and f != "checker.jar"]
+    jar_names = [f for f in files_and_dirs if f.endswith('.jar')]
     print(len(jar_names))
-    text = ("1\n"
-            "h(x)=x^2\n"
-            "(h(h(x)))^8")
-    compare_with_timeout("checker.jar", jar_names, _input=text)
+    with open('in.txt', 'r', encoding='utf-8') as file:
+        text = file.read()
+    compare(text, jar_names)
