@@ -358,7 +358,7 @@ def compare(jar_name_1, jar_name_2):
     yourAns = stdout.decode().strip()
     proc.terminate()
     proc.wait()
-    os.killpg(proc.pid, signal.SIGTERM)
+    proc.kill()
     yourExpr = yourAns.replace("^", "**")
     yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
     exprAns = sympy.expand_multinomial(yourAns)
@@ -372,12 +372,10 @@ def compare(jar_name_1, jar_name_2):
     yourExpr = yourAns.replace("^", "**")
     proc.terminate()
     proc.wait()
-    os.killpg(proc.pid, signal.SIGTERM)
+    proc.kill()
     yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
     yourAnsSym = sympy.expand_multinomial(yourAns)
     yourResults = [yourAnsSym.subs(x, x_val) for x_val in x_values]
-
-    tmp = [a - b for a, b in zip(results, yourResults)]
 
     return stdin, cost, yourResults == results, yourResults, results, 1
 
@@ -389,10 +387,10 @@ def compare_with_timeout(jar_name1, jar_name_2, timeout=10):
             result = async_result.get(timeout)
             pass
         except multiprocessing.TimeoutError:
-            # print('OverTime..')
+            print('OverTime..')
             result = (None,) * 6
         except Exception:
-            # print('ReStart..')
+            print('ReStart..')
             result = (None,) * 6
         finally:
             pool.close()  # 关闭进程池
@@ -413,4 +411,4 @@ def main(jar_name_1, jar_name_2, times=100):
 
 
 if __name__ == '__main__':
-    main("oohomework_2024_21371285_hw_2.jar", "checker.jar", 1000)
+    main("name.jar", "checker.jar", 1000)
