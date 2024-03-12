@@ -9,6 +9,7 @@ from DataGenerator import DataGenerator
 
 x_values = [0, 1, 2]
 x = sympy.symbols('x')
+GLOBAL_POINTER = 0
 
 EXPRESSION_LENGTH = 50
 EXPRESSION_COST = 5000
@@ -22,7 +23,8 @@ def compare(stdin, jar_names, checker):
 
     def exec_jar(jar_name):
         cmd = ['java', '-jar', jar_name]
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        proc = subprocess.Popen(
+            cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, stderr = proc.communicate(stdin.encode())
         yourAns = stdout.decode().strip()
         proc.terminate()
@@ -31,7 +33,8 @@ def compare(stdin, jar_names, checker):
 
         # for format
         cmd = ['java', '-jar', checker]
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        proc = subprocess.Popen(
+            cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = '0\n' + yourAns
         stdout, stderr = proc.communicate(output.encode())
         yourAns = stdout.decode().strip()
@@ -71,16 +74,21 @@ def compare_with_timeout(checker, jar_names=None):
             expr_len = EXPRESSION_LENGTH + 10
             cost = EXPRESSION_COST + 10
             while expr_len > EXPRESSION_LENGTH or cost > EXPRESSION_COST:
-                expr, cost = DataGenerato.getExpr(False)
-                expr_len = len(expr.replace("**", "^").replace(" ", "").replace("\t", ""))
+                global GLOBAL_POINTER
+                expr, cost = DataGenerato.genData(
+                    GLOBAL_POINTER, isFunction=False)
+                GLOBAL_POINTER = GLOBAL_POINTER + 1
+                expr_len = len(expr.replace(
+                    "**", "^").replace(" ", "").replace("\t", ""))
 
             _input = (output + expr).replace("**", "^")
-        except Exception:
+        except Exception as e:
+            print(e)
             pass
 
     timeout = 10 * len(jar_names)
 
-    with multiprocessing.Pool(processes=1) as pool:
+    with multiprocessing.Pool(processes=4) as pool:
         async_result = pool.apply_async(compare, (_input, jar_names, checker,))
         try:
             result = (async_result.get(timeout), _input, cost)
@@ -91,7 +99,8 @@ def compare_with_timeout(checker, jar_names=None):
         except subprocess.CalledProcessError as e:
             print(e.stderr)
             result = (None,) * 3
-        except Exception:
+        except Exception as e:
+            print(e)
             result = (None,) * 3
         finally:
             pool.close()  # 关闭进程池
@@ -100,7 +109,8 @@ def compare_with_timeout(checker, jar_names=None):
 
 def main(format_checker, times=100):
     files_and_dirs = os.listdir('.')
-    jar_names = [f for f in files_and_dirs if f.endswith('.jar') and f != format_checker]
+    jar_names = [f for f in files_and_dirs if f.endswith(
+        '.jar') and f != format_checker]
     print(len(jar_names))
     for i in tqdm(range(times), position=0):
         isSame, stdin, cost = compare_with_timeout(format_checker, jar_names)

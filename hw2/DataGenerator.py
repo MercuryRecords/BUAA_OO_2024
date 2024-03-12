@@ -36,8 +36,10 @@ class DataGenerator:
         self.hasLeadZeros = True  # 数字是否有前导零，如果传入sympy的表达式中数字有前导零，sympy将无法识别
         self.maxTerm = 3  # 表达式中的最大项数
         self.maxFactor = 2  # 项中最大因子个数
-        self.specialData = ["1", "x-x", "-1"]  # 可以放一些特殊数据
-        self.dataCost = [1, 2, 2]
+        self.specialData = ["exp((-x))", "x-x", "-1",
+                            "1", "exp((-2*x))"]  # 可以放一些特殊数据
+        # self.specialData = []
+        self.dataCost = [1, 2, 2, 3, 3]
         self.globalPointer = len(self.specialData)
         self.funcNames = ['f', 'g', 'h']
         self.used = dict()
@@ -147,14 +149,14 @@ class DataGenerator:
         return result, factorCost
 
     def getFactor(self, genExpr, asActual=False):
-        factor = self.rd(0, 13)
-        if factor <= 3:
+        factor = self.rd(0, 9)
+        if factor <= 1:
             toAdd, factorCost = self.getNum(False)
-        elif factor <= 7:
+        elif factor <= 3:
             toAdd, factorCost = self.getPower()
-        elif factor <= 11 and genExpr:
+        elif factor <= 5 and genExpr:
             toAdd, factorCost = self.getExpr(True)
-        elif factor <= 12:
+        elif factor <= 7:
             toAdd, factorCost = self.getExpoFunc()
         elif factor <= 13 and (self.isFunction == False) and (len(self.func_list_par) > 0):
             toAdd, factorCost = self.getFuncFactor()
@@ -203,7 +205,7 @@ class DataGenerator:
         for i in range(termNum):
             toAdd, termCost = self.getTerm(genExpr)
             result = result + self.getSymbol() + self.getWhiteSpace() + \
-                     toAdd + self.getWhiteSpace()
+                toAdd + self.getWhiteSpace()
             cost += termCost
         if isFactor:
             result = "(" + result + ")"
@@ -236,24 +238,25 @@ class DataGenerator:
         self.func_list_hed[fgh] = result
         return result
 
-    def genData(self, expr=None, cost=-1):
+    def genData(self, GLOBALPOINTER=0, isFunction=False, expr=None, cost=-1):
         if expr is None:
-            if self.globalPointer < len(self.specialData):
-                expr = self.specialData[self.globalPointer]
-                cost = self.dataCost[self.globalPointer]
-                globalPointer = self.globalPointer + 1
+            if GLOBALPOINTER < len(self.specialData):
+                expr = self.specialData[GLOBALPOINTER]
+                cost = self.dataCost[GLOBALPOINTER]
+                # self.globalPointer = self.globalPointer + 1
             else:
-                expr, cost = self.getExpr(False)
-        x = sympy.Symbol('x')
+                expr, cost = self.getExpr(isFunction)
+        # x = sympy.Symbol('x')
 
-        # def exp(x):
-        #     return sympy.sympify("E**(x)", locals={'x': x})
+        # # def exp(x):
+        # #     return sympy.sympify("E**(x)", locals={'x': x})
 
-        toEval = re.sub(r'\b0+(\d+)\b', r'\1', expr)
-        expr_sym = sympy.sympify(toEval)
-        # expr_sym = sympy.simplify(toEval, locals={'exp': exp})
-        simplified = sympy.expand(expr_sym)
-        return str(expr), str(simplified).replace("**", "^").replace(" ", ""), cost
+        # toEval = re.sub(r'\b0+(\d+)\b', r'\1', expr)
+        # expr_sym = sympy.sympify(toEval)
+        # # expr_sym = sympy.simplify(toEval, locals={'exp': exp})
+        # simplified = sympy.expand(expr_sym)
+        # return str(expr), str(simplified).replace("**", "^").replace(" ", ""), cost
+        return expr, cost
 
     def getFuncExpBody(self, name, var):
         self.funcName = name
@@ -272,7 +275,8 @@ class DataGenerator:
             func_len = length + 10
             cost = cost_limit + 10
             while func_len > length or cost > cost_limit:  # HERE to set func_len_limit
-                false_keys = [key for key, value in self.used.items() if not value]
+                false_keys = [key for key,
+                              value in self.used.items() if not value]
                 if false_keys:
                     fgh = random.choice(false_keys)
                 else:
@@ -284,7 +288,8 @@ class DataGenerator:
                 permutation = ['x', 'y', 'z']
                 all_permutation = list(itertools.permutations(permutation))
                 to_pick = all_permutation[case]
-                result += self.getWhiteSpace() + to_pick[0] + self.getWhiteSpace()
+                result += self.getWhiteSpace() + \
+                    to_pick[0] + self.getWhiteSpace()
                 addNum = self.rd(0, 2)
                 for j in range(0, addNum):
                     result += ',' + self.getWhiteSpace() + \
@@ -295,12 +300,14 @@ class DataGenerator:
                 self.funcName = fgh
                 self.funcVars = temp
                 expr, cost = self.getExpr(False)
-                func_len = len((result + '=' + expr).replace("**", "^").replace(" ", "").replace("\t", ""))
+                func_len = len((result + '=' + expr).replace("**",
+                               "^").replace(" ", "").replace("\t", ""))
             # self.getFuncDefHead(used)
             self.func_list_par[fgh] = temp
             self.func_list_hed[fgh] = result
             self.func_list_exp[fgh] = expr
             self.used[self.funcName] = True
+            self.globalPointer = 0
         # for name, var in self.func_list_par.items():
         #     # print(name, var)
         #     self.getFuncExpBody(name, var)
@@ -343,7 +350,8 @@ def compare(jar_name_1, jar_name_2):
     expr_len = 210
     while expr_len > 200:
         expr, cost = DataGenerato.getExpr(False)
-        expr_len = len(expr.replace("**", "^").replace(" ", "").replace("\t", ""))
+        expr_len = len(expr.replace(
+            "**", "^").replace(" ", "").replace("\t", ""))
 
     # newExpr = replaceFunction((output + expr).replace("**", "^"))
     # newExpr = newExpr.replace("^", "**")
@@ -399,7 +407,8 @@ def compare_with_timeout(jar_name1, jar_name_2, timeout=10):
 
 def main(jar_name_1, jar_name_2, times=100):
     for i in tqdm(range(times), position=0):
-        stdin, cost, isSame, firsts, seconds, restart = compare_with_timeout(jar_name_1, jar_name_2)
+        stdin, cost, isSame, firsts, seconds, restart = compare_with_timeout(
+            jar_name_1, jar_name_2)
         if restart is None:
             continue
         if not isSame:
