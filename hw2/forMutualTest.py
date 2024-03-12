@@ -9,7 +9,7 @@ from DataGenerator import DataGenerator
 
 x_values = [0, 1, 2]
 x = sympy.symbols('x')
-GLOBAL_POINTER = 0
+GLOBAL_POINTER = 5
 
 EXPRESSION_LENGTH = 50
 EXPRESSION_COST = 5000

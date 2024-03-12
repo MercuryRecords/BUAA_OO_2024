@@ -37,9 +37,8 @@ class DataGenerator:
         self.maxTerm = 3  # 表达式中的最大项数
         self.maxFactor = 2  # 项中最大因子个数
         self.specialData = ["exp((-x))", "x-x", "-1",
-                            "1", "exp((-2*x))"]  # 可以放一些特殊数据
-        # self.specialData = []
-        self.dataCost = [1, 2, 2, 3, 3]
+                            "1", "exp((-2*x))"]  # 可以放一些特殊数据\
+        self.dataCost = [3, 1, 2, 2, 3]
         self.globalPointer = len(self.specialData)
         self.funcNames = ['f', 'g', 'h']
         self.used = dict()
