@@ -39,6 +39,9 @@ def compare(stdin, jar_names, checker):
         proc.wait()
         proc.kill()
 
+        if yourAns.startswith("Exception"):
+            return [-1 for _ in x_values]
+
         yourExpr = yourAns.replace("^", "**")
         yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
         exprAns = sympy.expand_multinomial(yourAns)
