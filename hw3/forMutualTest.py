@@ -60,10 +60,11 @@ def compare(stdin, jar_names, checker):
     return True
 
 
-def compare_with_timeout(checker, jar_names=None,num=0):
+def compare_with_timeout(checker, jar_names=None, i=0):
     _input = ""
     while _input == "":
         try:
+
             output = ""
             DataGenerato = DataGenerator()
             num = DataGenerato.generateFunction(FUNCTION_LENGTH, FUNCTION_COST)
@@ -74,11 +75,14 @@ def compare_with_timeout(checker, jar_names=None,num=0):
             cost = EXPRESSION_COST + 10
             while expr_len > EXPRESSION_LENGTH or cost > EXPRESSION_COST:
                 expr, cost = DataGenerato.genData(
-                    num, isFunction=False)
+                    i, isFunction=False)
                 expr_len = len(expr.replace(
                     "**", "^").replace(" ", "").replace("\t", ""))
 
             _input = (output + expr).replace("**", "^")
+            if (i <= 50):
+                with open('the first 50 data.txt', 'a') as f:
+                    print(_input, file=f)
         except Exception as e:
             print(e)
             pass
@@ -111,9 +115,10 @@ def main(format_checker, times=100):
 
     jar_names = [f for f in files_and_dirs if f.endswith(
         '.jar')]
-    print(len(jar_names))
+    print(jar_names)
     for i in tqdm(range(times), position=0):
-        isSame, stdin, cost = compare_with_timeout(format_checker, jar_names,i)
+        isSame, stdin, cost = compare_with_timeout(
+            format_checker, jar_names, i)
         if isSame is not None and isSame == False:
             time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             filename = f"{cost}_at_{time_str}.txt"
@@ -125,4 +130,4 @@ def main(format_checker, times=100):
 
 
 if __name__ == '__main__':
-    main('checker.jar', 1000)
+    main('checker.jar', 100)

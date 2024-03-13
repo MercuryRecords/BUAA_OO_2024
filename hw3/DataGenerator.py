@@ -9,6 +9,7 @@ import sympy
 from subprocess import STDOUT, PIPE
 from tqdm import tqdm
 
+
 def replaceFunction(stdin):
     cmd = ['java', '-jar', "replace.jar"]
     proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
@@ -254,6 +255,8 @@ class DataGenerator:
         return result
 
     def genData(self, GLOBALPOINTER=0, isFunction=False, expr=None, cost=-1):
+        # with open('output.txt', 'a') as f:
+        #     print(GLOBALPOINTER, file=f)
         if expr is None:
             if GLOBALPOINTER < len(self.specialData):
                 expr = self.specialData[GLOBALPOINTER]
@@ -401,15 +404,15 @@ def compare(jar_name_1, jar_name_2, GLOBAL_POINTER=0):
     yourAnsSym = sympy.expand_multinomial(yourAns)
     yourResults = [yourAnsSym.subs(x, x_val) for x_val in x_values]
 
-#debug log
+# debug log
     # with open('output.txt', 'a') as f:
     #     print(stdin, file=f)
     # print(stdin)
     return stdin, cost, yourResults == results, yourResults, results, 1
 
 
-def compare_with_timeout(jar_name1, jar_name_2, num = 0,timeout=10):
-    with multiprocessing.Pool(processes=1) as pool:
+def compare_with_timeout(jar_name1, jar_name_2, num=0, timeout=10):
+    with multiprocessing.Pool(processes=8) as pool:
         async_result = pool.apply_async(compare, (jar_name1, jar_name_2, num,))
         try:
             result = async_result.get(timeout)
@@ -428,7 +431,7 @@ def compare_with_timeout(jar_name1, jar_name_2, num = 0,timeout=10):
 def main(jar_name_1, jar_name_2, times=100):
     for i in tqdm(range(times), position=0):
         stdin, cost, isSame, firsts, seconds, restart = compare_with_timeout(
-            jar_name_1, jar_name_2,i)
+            jar_name_1, jar_name_2, i)
         if restart is None:
             continue
         if not isSame:
