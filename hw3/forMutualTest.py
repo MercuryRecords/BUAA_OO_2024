@@ -81,7 +81,7 @@ def compare_with_timeout(checker, jar_names=None, i=0):
 
             _input = (output + expr).replace("**", "^")
             if (i <= 50):
-                with open('the first 50 data.txt', 'a') as f:
+                with open('the_first_50_data.txt', 'a') as f:
                     print(_input, file=f)
         except Exception as e:
             print(e)
