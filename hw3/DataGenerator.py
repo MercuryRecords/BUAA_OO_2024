@@ -6,7 +6,6 @@ import subprocess
 import sympy
 from subprocess import STDOUT, PIPE
 from tqdm import tqdm
-import sys
 
 
 def rd(a, b):
@@ -42,7 +41,6 @@ class DataGenerator:
         self.funcName = 'f'
         self.funcVars = []
         self.isFunction = False
-        sys.setrecursionlimit(3000)
 
     def getWhiteSpace(self):
         if not self.hasWhiteSpace:

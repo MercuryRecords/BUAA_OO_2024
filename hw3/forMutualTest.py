@@ -114,13 +114,13 @@ def main(format_checker, times=100):
             format_checker, jar_names, i)
         if isSame is not None and isSame is False:
             time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            filename = f"{cost}_at_{time_str}.txt"
+            filename = f"{time_str}.txt"
             with open(filename, 'w') as f:
                 f.write(stdin)
             # print(cost)
             # print(stdin)
-            break
+            # break
 
 
 if __name__ == '__main__':
-    main('checker.jar', 100)
+    main('checker.jar', 10000)
