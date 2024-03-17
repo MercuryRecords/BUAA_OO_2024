@@ -1,20 +1,16 @@
 import itertools
 import multiprocessing
-import os
 import random
 import re
-import signal
 import subprocess
 import sympy
 from subprocess import STDOUT, PIPE
 from tqdm import tqdm
+import sys
 
 
-def replaceFunction(stdin):
-    cmd = ['java', '-jar', "replace.jar"]
-    proc = subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-    stdout, stderr = proc.communicate(stdin.encode())
-    return stdout.decode().strip()
+def rd(a, b):
+    return random.randint(a, b)
 
 
 class DataGenerator:
@@ -34,8 +30,8 @@ class DataGenerator:
                         ]  # 常量池
         self.hasWhiteSpace = True  # 是否加入空白字符
         self.hasLeadZeros = True  # 数字是否有前导零，如果传入sympy的表达式中数字有前导零，sympy将无法识别
-        self.maxTerm = 3  # 表达式中的最大项数
-        self.maxFactor = 2  # 项中最大因子个数
+        self.maxTerm = 4  # 表达式中的最大项数
+        self.maxFactor = 3  # 项中最大因子个数
         self.specialData = ["exp((-x))", "x-x", "-1",
                             "1", "exp((-2*x))"]  # 可以放一些特殊数据
         # self.specialData = []
@@ -46,17 +42,15 @@ class DataGenerator:
         self.funcName = 'f'
         self.funcVars = []
         self.isFunction = False
-
-    def rd(self, a, b):
-        return random.randint(a, b)
+        sys.setrecursionlimit(3000)
 
     def getWhiteSpace(self):
         if not self.hasWhiteSpace:
             return ""
         blankTerm = ""
-        cnt = self.rd(0, 2)
+        cnt = rd(0, 2)
         for i in range(cnt):
-            type = self.rd(0, 1)
+            type = rd(0, 1)
             if type == 0:
                 blankTerm = blankTerm + " "
             else:
@@ -64,22 +58,22 @@ class DataGenerator:
         return blankTerm
 
     def getSymbol(self):
-        if self.rd(0, 1) == 1:
+        if rd(0, 1) == 1:
             return "+"
         else:
             return "-"
 
     def getNum(self, posOnly):
         result = ""
-        integer = self.intPool[self.rd(0, len(self.intPool) - 1)]
+        integer = self.intPool[rd(0, len(self.intPool) - 1)]
         cost = len(str(integer))
-        iszero = self.rd(0, 2)
+        iszero = rd(0, 2)
         for i in range(iszero):
             result = result + "0"
         if not self.hasLeadZeros:
             result = ""
         result = result + str(integer)
-        if self.rd(0, 1) == 1:
+        if rd(0, 1) == 1:
             if posOnly:
                 result = "+" + result
             else:
@@ -91,9 +85,9 @@ class DataGenerator:
     def getExponent(self):
         result = "**"
         result = result + self.getWhiteSpace()
-        case = self.rd(0, 8)
+        case = rd(0, 8)
         cost = len(str(case))
-        if self.rd(0, 1) == 1:
+        if rd(0, 1) == 1:
             result = result + "+"
             cost += 1
         result = result + str(case)
@@ -104,14 +98,14 @@ class DataGenerator:
         if self.isFunction:
             var = self.funcVars
             addNum = len(var)
-            case = self.rd(0, addNum - 1)
+            case = rd(0, addNum - 1)
             result = var[case]
-            if self.rd(0, 1) == 1:
+            if rd(0, 1) == 1:
                 toAdd, _ = self.getExponent()
                 result = result + self.getWhiteSpace() + toAdd
         else:
             result = "x"
-            if self.rd(0, 1) == 1:
+            if rd(0, 1) == 1:
                 toAdd, _ = self.getExponent()
                 result = result + self.getWhiteSpace() + toAdd
         # print("Power:"+result)
@@ -127,10 +121,10 @@ class DataGenerator:
         result += toAdd
         result += self.getWhiteSpace()
         result += ")"
-        if self.rd(0, 1) == 1:
+        if rd(0, 1) == 1:
             toAdd, expCost = self.getExponent()
             result = result + self.getWhiteSpace() + toAdd
-            factorCost += 2 ** expCost
+            factorCost += 2 * expCost
         return result, factorCost
 
     def getDiffFunc(self):
@@ -138,8 +132,11 @@ class DataGenerator:
         result += self.getWhiteSpace()
         result += "("
         result += self.getWhiteSpace()
-        toAdd, factorCost = self.getFactor(True)
-        factorCost += 1
+        if rd(0, 4) == 4:
+            toAdd, factorCost = self.getDiffFunc()
+        else:
+            toAdd, factorCost = self.getExpr(False)
+        # factorCost += 1
         result += toAdd
         result += self.getWhiteSpace()
         result += ")"
@@ -161,7 +158,7 @@ class DataGenerator:
         return result, factorCost
 
     def getFactor(self, genExpr, asActual=False):
-        factor = self.rd(0, 14)
+        factor = rd(0, 14)
         if factor <= 3:
             toAdd, factorCost = self.getNum(False)
         elif factor <= 7:
@@ -170,7 +167,7 @@ class DataGenerator:
             toAdd, factorCost = self.getExpr(True)
         elif factor <= 12:
             toAdd, factorCost = self.getExpoFunc()
-        elif factor <= 13 and (self.isFunction == False):
+        elif factor <= 13 and self.isFunction is False:
             toAdd, factorCost = self.getDiffFunc()
         elif factor <= 14 and (len(self.func_list_par) > 0):
             toAdd, factorCost = self.getFuncFactor()
@@ -178,7 +175,7 @@ class DataGenerator:
             toAdd = "0"
             factorCost = 1
         while asActual and factorCost > self.actual_para_limit:
-            factor = self.rd(0, 14)
+            factor = rd(0, 14)
             if factor <= 3:
                 toAdd, factorCost = self.getNum(False)
             elif factor <= 7:
@@ -187,7 +184,7 @@ class DataGenerator:
                 toAdd, factorCost = self.getExpr(True)
             elif factor <= 12:
                 toAdd, factorCost = self.getExpoFunc()
-            elif factor <= 13 and (self.isFunction == False):
+            elif factor <= 13 and self.isFunction is False:
                 toAdd, factorCost = self.getDiffFunc()
             elif factor <= 14 and (len(self.func_list_par) > 0):
                 toAdd, factorCost = self.getFuncFactor()
@@ -197,10 +194,10 @@ class DataGenerator:
         return toAdd, factorCost
 
     def getTerm(self, genExpr):
-        factorNum = self.rd(1, self.maxFactor)
+        factorNum = rd(1, self.maxFactor)
         result = ""
         cost = 1
-        if self.rd(0, 1) == 1:
+        if rd(0, 1) == 1:
             result = self.getSymbol() + self.getWhiteSpace()
         for i in range(factorNum):
             toAdd, factorCost = self.getFactor(genExpr)
@@ -212,7 +209,7 @@ class DataGenerator:
         return result, cost
 
     def getExpr(self, isFactor):
-        termNum = self.rd(1, self.maxTerm)
+        termNum = rd(1, self.maxTerm)
         result = self.getWhiteSpace()
         cost = 0
         genExpr = True
@@ -225,7 +222,7 @@ class DataGenerator:
             cost += termCost
         if isFactor:
             result = "(" + result + ")"
-            if self.rd(0, 1) == 1:
+            if rd(0, 1) == 1:
                 toAdd, expCost = self.getExponent()
                 result = result + self.getWhiteSpace() + toAdd
                 cost = max(cost, 2) ** max(expCost, 1)
@@ -239,12 +236,12 @@ class DataGenerator:
         self.funcName = fgh
         result = fgh
         result += self.getWhiteSpace() + '('
-        case = self.rd(0, 5)
+        case = rd(0, 5)
         permutation = ['x', 'y', 'z']
         all_permutation = list(itertools.permutations(permutation))
         to_pick = all_permutation[case]
         result += self.getWhiteSpace() + to_pick[0] + self.getWhiteSpace()
-        addNum = self.rd(0, 2)
+        addNum = rd(0, 2)
         for i in range(0, addNum):
             result += ',' + self.getWhiteSpace() + \
                       to_pick[i + 1] + self.getWhiteSpace()
@@ -261,19 +258,8 @@ class DataGenerator:
             if GLOBALPOINTER < len(self.specialData):
                 expr = self.specialData[GLOBALPOINTER]
                 cost = self.dataCost[GLOBALPOINTER]
-                # self.globalPointer = self.globalPointer + 1
             else:
                 expr, cost = self.getExpr(isFunction)
-        # x = sympy.Symbol('x')
-
-        # # def exp(x):
-        # #     return sympy.sympify("E**(x)", locals={'x': x})
-
-        # toEval = re.sub(r'\b0+(\d+)\b', r'\1', expr)
-        # expr_sym = sympy.sympify(toEval)
-        # # expr_sym = sympy.simplify(toEval, locals={'exp': exp})
-        # simplified = sympy.expand(expr_sym)
-        # return str(expr), str(simplified).replace("**", "^").replace(" ", ""), cost
         return expr, cost
 
     def getFuncExpBody(self, name, var):
@@ -287,12 +273,12 @@ class DataGenerator:
 
     def generateFunction(self, length=150, cost_limit=2000):
         self.isFunction = True
-        funcNum = self.rd(0, 3)
+        funcNum = rd(0, 3)
         self.used = {func_name: False for func_name in self.funcNames}
         for i in range(0, funcNum):
             func_len = length + 10
             cost = cost_limit + 10
-            while func_len > length or cost > cost_limit:  # HERE to set func_len_limit
+            while func_len > length or cost > cost_limit:
                 false_keys = [key for key,
                               value in self.used.items() if not value]
                 if false_keys:
@@ -302,13 +288,13 @@ class DataGenerator:
                 self.funcName = fgh
                 result = fgh
                 result += self.getWhiteSpace() + '('
-                case = self.rd(0, 5)
+                case = rd(0, 5)
                 permutation = ['x', 'y', 'z']
                 all_permutation = list(itertools.permutations(permutation))
                 to_pick = all_permutation[case]
                 result += self.getWhiteSpace() + \
                     to_pick[0] + self.getWhiteSpace()
-                addNum = self.rd(0, 2)
+                addNum = rd(0, 2)
                 for j in range(0, addNum):
                     result += ',' + self.getWhiteSpace() + \
                               to_pick[j + 1] + self.getWhiteSpace()
@@ -371,12 +357,6 @@ def compare(jar_name_1, jar_name_2, GLOBAL_POINTER=0):
             GLOBALPOINTER=GLOBAL_POINTER, isFunction=False)
         expr_len = len(expr.replace(
             "**", "^").replace(" ", "").replace("\t", ""))
-
-    # newExpr = replaceFunction((output + expr).replace("**", "^"))
-    # newExpr = newExpr.replace("^", "**")
-    # newExpr = re.sub(r'\b0+(\d+)\b', r'\1', newExpr)
-    #  = sympy.expand_multinomial(newExpr)
-    # results = [exprAns.subs(x, x_val) for x_val in x_values]
 
     cmd = ['java', '-jar', jar_name_1]
     stdin = (output + expr).replace("**", "^")

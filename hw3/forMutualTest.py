@@ -17,7 +17,6 @@ FUNCTION_COST = 2000
 
 
 def compare(stdin, jar_names, checker):
-    expr_dict = dict()
     expr_list = list()
 
     def exec_jar(jar_name):
@@ -74,28 +73,24 @@ def compare_with_timeout(checker, jar_names=None, i=0):
             expr_len = EXPRESSION_LENGTH + 10
             cost = EXPRESSION_COST + 10
             while expr_len > EXPRESSION_LENGTH or cost > EXPRESSION_COST:
-                expr, cost = DataGenerato.genData(
-                    i, isFunction=False)
-                expr_len = len(expr.replace(
-                    "**", "^").replace(" ", "").replace("\t", ""))
-
+                expr, cost = DataGenerato.genData(i, isFunction=False)
+                expr_len = len(expr.replace("**", "^").replace(" ", "").replace("\t", ""))
             _input = (output + expr).replace("**", "^")
-            if (i <= 50):
-                with open('the first 50 data.txt', 'a') as f:
-                    print(_input, file=f)
-        except Exception as e:
-            print(e)
+        except RecursionError as e:
+            # print(e)
             pass
 
     timeout = 10 * len(jar_names)
-
-    with multiprocessing.Pool(processes=8) as pool:
+    with multiprocessing.Pool(processes=1) as pool:
         async_result = pool.apply_async(compare, (_input, jar_names, checker,))
         try:
             result = (async_result.get(timeout), _input, cost)
             pass
         except multiprocessing.TimeoutError:
-            # print('OverTime..')
+            print('OverTime..')
+            time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            with open(f"{time_str}.txt", "w") as f:
+                f.write(_input)
             result = (None,) * 3
         except subprocess.CalledProcessError as e:
             print(e.stderr)
@@ -110,8 +105,6 @@ def compare_with_timeout(checker, jar_names=None, i=0):
 
 def main(format_checker, times=100):
     files_and_dirs = os.listdir('.')
-    # jar_names = [f for f in files_and_dirs if f.endswith(
-    #     '.jar') and f != format_checker]
 
     jar_names = [f for f in files_and_dirs if f.endswith(
         '.jar')]
@@ -119,7 +112,7 @@ def main(format_checker, times=100):
     for i in tqdm(range(times), position=0):
         isSame, stdin, cost = compare_with_timeout(
             format_checker, jar_names, i)
-        if isSame is not None and isSame == False:
+        if isSame is not None and isSame is False:
             time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             filename = f"{cost}_at_{time_str}.txt"
             with open(filename, 'w') as f:
