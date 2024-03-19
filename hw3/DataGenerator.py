@@ -172,7 +172,7 @@ class DataGenerator:
         else:
             toAdd = "0"
             factorCost = 1
-        while asActual and factorCost > self.actual_para_limit:
+        while asActual and factorCost < self.actual_para_limit:
             factor = rd(0, 14)
             if factor <= 3:
                 toAdd, factorCost = self.getNum(False)

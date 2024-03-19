@@ -6,6 +6,7 @@ import subprocess
 import sympy
 from tqdm import tqdm
 from DataGenerator import DataGenerator
+import random
 
 x_values = [0, 1, 2]
 x = sympy.symbols('x')
@@ -16,7 +17,28 @@ FUNCTION_LENGTH = 30
 FUNCTION_COST = 2000
 
 
-def compare(stdin, jar_names, checker):
+def compare(jar_names, checker):
+    i=random.randint(0,100)
+    _input = ""
+    while _input == "":
+        try:
+
+            output = ""
+            DataGenerato = DataGenerator()
+            num = DataGenerato.generateFunction(FUNCTION_LENGTH, FUNCTION_COST)
+            output += str(num) + '\n'
+            output += DataGenerato.getCustomDef()
+
+            expr_len = EXPRESSION_LENGTH + 10
+            cost = EXPRESSION_COST + 10
+            while expr_len > EXPRESSION_LENGTH or cost > EXPRESSION_COST:
+                expr, cost = DataGenerato.genData(i, isFunction=False)
+                expr_len = len(expr.replace("**", "^").replace(" ", "").replace("\t", ""))
+            _input = (output + expr).replace("**", "^")
+        except RecursionError as e:
+            # print(e)
+            pass
+    stdin = _input
     expr_list = list()
 
     def exec_jar(jar_name):
@@ -42,7 +64,6 @@ def compare(stdin, jar_names, checker):
 
         if yourAns.startswith("Exception"):
             return [-1 for _ in x_values]
-
         yourExpr = yourAns.replace("^", "**")
         yourAns = re.sub(r'\b0+(\d+)\b', r'\1', yourExpr)
         exprAns = sympy.expand_multinomial(yourAns)
@@ -52,39 +73,37 @@ def compare(stdin, jar_names, checker):
 
     for fname in jar_names:
         expr_list.append(exec_jar(fname))
+    with open('the_first_50_data.txt', 'a') as f:
+        print(_input, file=f)
 
     for i in range(len(expr_list) - 1):
         if expr_list[i] != expr_list[i + 1]:
-            return False
-    return True
+            return False,stdin
+    return True,stdin
 
 
 def compare_with_timeout(checker, jar_names=None, i=0):
-    _input = ""
-    while _input == "":
-        try:
 
-            output = ""
-            DataGenerato = DataGenerator()
-            num = DataGenerato.generateFunction(FUNCTION_LENGTH, FUNCTION_COST)
-            output += str(num) + '\n'
-            output += DataGenerato.getCustomDef()
-
-            expr_len = EXPRESSION_LENGTH + 10
-            cost = EXPRESSION_COST + 10
-            while expr_len > EXPRESSION_LENGTH or cost > EXPRESSION_COST:
-                expr, cost = DataGenerato.genData(i, isFunction=False)
-                expr_len = len(expr.replace("**", "^").replace(" ", "").replace("\t", ""))
-            _input = (output + expr).replace("**", "^")
-        except RecursionError as e:
-            # print(e)
-            pass
 
     timeout = 10 * len(jar_names)
-    with multiprocessing.Pool(processes=1) as pool:
-        async_result = pool.apply_async(compare, (_input, jar_names, checker,))
+    with multiprocessing.Pool(processes=2) as pool:
+        async_result1 = pool.apply_async(compare, (jar_names, checker,))
+        async_result2 = pool.apply_async(compare, (jar_names, checker,))
+        _input=""
         try:
-            result = (async_result.get(timeout), _input, cost)
+            isSame1,stdin1 = async_result1.get(timeout)
+            isSame2,stdin2 = async_result2.get(timeout)
+            if isSame1 is False:
+                time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                filename = f"{time_str}.txt"
+                with open(filename, 'w') as f:
+                    f.write(stdin1)
+            if isSame2 is False:
+                time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                filename = f"{time_str}.txt"
+                with open(filename, 'w') as f:
+                    f.write(stdin2)
+            result=""
             pass
         except multiprocessing.TimeoutError:
             print('OverTime..')
@@ -110,17 +129,13 @@ def main(format_checker, times=100):
         '.jar')]
     print(jar_names)
     for i in tqdm(range(times), position=0):
-        isSame, stdin, cost = compare_with_timeout(
+        compare_with_timeout(
             format_checker, jar_names, i)
-        if isSame is not None and isSame is False:
-            time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            filename = f"{time_str}.txt"
-            with open(filename, 'w') as f:
-                f.write(stdin)
+
             # print(cost)
             # print(stdin)
             # break
 
 
 if __name__ == '__main__':
-    main('checker.jar', 10000)
+    main('checker.jar', 5)
