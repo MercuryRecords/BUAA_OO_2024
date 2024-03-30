@@ -6,6 +6,7 @@ CACHE_PATH = "cache"
 PROCESS_COUNT = 16
 ITERATIONS = 100
 JAR_NAME = 'Nadleeh.jar'
+C_NAME = 'checker'
 def run_iteration(iteration):
     cache_folder = os.path.join(CACHE_PATH, f"iteration_{iteration}")
     os.makedirs(cache_folder, exist_ok=True)
@@ -25,7 +26,7 @@ def run_iteration(iteration):
         java_proc.wait()
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
-    subprocess.run(["./checker", stdin_path, stdout_path])
+    subprocess.run([C_NAME, stdin_path, stdout_path])
 
     print(f"Iteration {iteration} completed.")
 
