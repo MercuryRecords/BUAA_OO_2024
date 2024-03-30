@@ -6,7 +6,7 @@ CACHE_PATH = "cache"
 PROCESS_COUNT = 16
 ITERATIONS = 100
 JAR_NAME = 'Nadleeh.jar'
-C_NAME = 'checker'
+C_NAME = './checker'
 def run_iteration(iteration):
     cache_folder = os.path.join(CACHE_PATH, f"iteration_{iteration}")
     os.makedirs(cache_folder, exist_ok=True)
