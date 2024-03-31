@@ -31,7 +31,7 @@ def genData(length=70):
     length = min(length, 30 * (MAX_ELEVATOR - MIN_ELEVATOR + 1))
     ans = []
     requests_by_elevator = [0 for _ in range(MAX_ELEVATOR + 1)]
-    SPECIAL_START, SPECIAL_END = chooseFloor(MIN_FLOOR, MAX_FLOOR)
+    SPECIAL_START, SPECIAL_END = 11, 2
     # ans is a list of time, id, start, end, by
 
     for i in range(length):
@@ -40,6 +40,8 @@ def genData(length=70):
             start, end = chooseFloor(MIN_FLOOR, MAX_FLOOR)
         else:
             start, end = SPECIAL_START, SPECIAL_END
+            if randint(0, 1) == 0:
+                SPECIAL_START, SPECIAL_END = SPECIAL_END, SPECIAL_START
         by = chooseBy()
         while requests_by_elevator[by] >= 30:
             by = chooseBy()
