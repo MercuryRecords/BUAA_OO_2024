@@ -359,6 +359,10 @@ int checkClose(String src, int closeTime)
                 printf("Elevator%d: Door close twice at %d.\n", eleId, place);
                 return 0;
         }
+        if (elevators[eleId].floor != place) {
+                printf("Elevator%d: Incorrect floor.\n", eleId, place);
+        		return 0;
+		} 
         if (closeTime - elevators[eleId].openTime < 4000) {
         		printf("Elevator%d: Door close too fast.\n", eleId, place);
                 return 0;
@@ -378,6 +382,10 @@ int checkOpen(String src, int openTime)
                 printf("Elevator%d: Door open twice at %d.\n", eleId, place);
                 return 0;
         }
+        if (elevators[eleId].floor != place) {
+                printf("Elevator%d: Incorrect floor.\n", eleId, place);
+        		return 0;
+		} 
         elevators[eleId].doorOpen = 1;
         elevators[eleId].openTime = openTime;
 
