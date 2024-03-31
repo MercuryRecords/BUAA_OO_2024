@@ -9,7 +9,7 @@ PROCESS_COUNT = 16
 ITERATIONS = 100
 C_NAME = 'checker'
 PYTHON = 'python3'
-JAR_NAME = None
+JAR_NAME = ''
 def run_iteration(iteration):
     cache_folder = os.path.join(CACHE_PATH, f"iteration_{iteration}")
     os.makedirs(cache_folder, exist_ok=True)
