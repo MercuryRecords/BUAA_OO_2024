@@ -10,7 +10,7 @@ from tqdm import tqdm
 from generator import genData
 
 if platform.system() == 'Windows':
-    FEED_PROGRAM = './datainput_student_win64.exe'
+    FEED_PROGRAM = 'datainput_student_win64.exe'
 else:
     FEED_PROGRAM = './datainput_student_linux_x86_64'
 CACHE_PATH = "cache"
@@ -71,7 +71,6 @@ def start_processes(jar_files):
         cache_folder = os.path.join(CACHE_PATH, f"{processor_id}_iteration_{cnt}")
         try:
             os.makedirs(cache_folder, exist_ok=True)
-            cnt += 1
             to_be_deleted = True
 
             # genData
