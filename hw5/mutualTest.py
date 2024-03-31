@@ -69,7 +69,7 @@ def get_jar_files(directory):
 def start_processes(jar_files):
     processor_id = randint(0, 100000)
 
-    for cnt in tqdm(range(1, 2)):
+    for cnt in tqdm(range(1, 51)):
         cache_folder = os.path.join(CACHE_PATH, f"{processor_id}_iteration_{cnt}")
         try:
             os.makedirs(cache_folder, exist_ok=True)
