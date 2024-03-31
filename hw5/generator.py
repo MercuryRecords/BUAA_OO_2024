@@ -3,7 +3,7 @@ from random import randint, random
 MAX_TIME = 50
 MAX_FLOOR = 11
 MIN_FLOOR = 1
-MAX_ELEVATOR = 6
+MAX_ELEVATOR = randint(2, 6)
 MIN_ELEVATOR = 1
 
 def chooseFloor(_min, _max):
@@ -25,7 +25,6 @@ def chooseBy():
 
 
 def genData(length=70):
-    MAX_ELEVATOR = randint(2, 6)
     length = min(length, 30 * (MAX_ELEVATOR - MIN_ELEVATOR + 1))
     ans = []
     requests_by_elevator = [0 for _ in range(MAX_ELEVATOR + 1)]
