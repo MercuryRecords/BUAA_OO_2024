@@ -4,21 +4,17 @@ import subprocess
 import multiprocessing
 import shutil
 from random import randint
-
 from tqdm import tqdm
-
 from generator import genData
 
-if platform.system() == 'Windows':
-    FEED_PROGRAM = 'datainput_student_win64.exe'
-else:
-    FEED_PROGRAM = './datainput_student_linux_x86_64'
 CACHE_PATH = "cache"
 if platform.system() == 'Windows':
+    FEED_PROGRAM = 'datainput_student_win64.exe'
     C_NAME = 'checker.exe'
-    SHELL= True
+    SHELL = True
 else:
-    C_NAME = 'checker'
+    FEED_PROGRAM = './datainput_student_linux_x86_64'
+    C_NAME = './checker'
     SHELL = False
 
 
@@ -32,7 +28,7 @@ def process_jar_file(jar_file_path, cache_folder, stdin_path):
         datainput_proc = subprocess.Popen([FEED_PROGRAM], cwd=cache_folder, stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
         java_proc = subprocess.Popen(["java", "-jar", jar_file_path], stdin=datainput_proc.stdout,
-                                     stdout=stdout_file, stderr=subprocess.STDOUT,shell=SHELL)
+                                     stdout=stdout_file, stderr=subprocess.STDOUT, shell=SHELL)
 
     try:
         return_code = java_proc.wait(timeout=120)
@@ -50,7 +46,7 @@ def process_jar_file(jar_file_path, cache_folder, stdin_path):
         return "Error2"
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
-    checker_output = subprocess.run([f"./{C_NAME}", stdin_path, stdout_path], capture_output=True,
+    checker_output = subprocess.run([C_NAME, stdin_path, stdout_path], capture_output=True,
                                     text=True).stdout.strip()
     if checker_output != "Correct.":
         return "Error3"
