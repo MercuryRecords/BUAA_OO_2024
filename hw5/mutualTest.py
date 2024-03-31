@@ -5,6 +5,8 @@ import multiprocessing
 import shutil
 from random import randint
 
+from tqdm import tqdm
+
 from generator import genData
 
 if platform.system() == 'Windows':
@@ -32,7 +34,7 @@ def process_jar_file(jar_file_path, cache_folder, stdin_path):
 
     try:
         return_code = java_proc.wait(timeout=120)
-        if return_code != 0:
+        if return_code is None or return_code != 0:
             return f"Error-{return_code}"
     except subprocess.TimeoutExpired:
         return "OverTime1"
@@ -63,11 +65,9 @@ def get_jar_files(directory):
 
 # 创建并启动一个进程来处理每个.jar文件
 def start_processes(jar_files):
-    cnt = 1
     processor_id = randint(0, 100000)
 
-    while True:
-        print(cnt)
+    for cnt in tqdm(range(1, 51)):
         cache_folder = os.path.join(CACHE_PATH, f"{processor_id}_iteration_{cnt}")
         try:
             os.makedirs(cache_folder, exist_ok=True)
