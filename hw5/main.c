@@ -20,6 +20,8 @@ typedef struct Elevator
         int dlen;
         int floor;
         int doorOpen;
+        int openTime;
+        int arriveTime;
 } Elevator;
 typedef char *String;
 
@@ -133,19 +135,20 @@ String getLine(FILE *src)
         return tmp;
 }
 
-void passTime(String *src);
-int checkArrive(String src);
-int checkOpen(String src);
-int checkClose(String src);
+int passTime(String *src);
+int checkArrive(String src, int arriveTime);
+int checkOpen(String src, int openTime);
+int checkClose(String src, int closeTime);
 int checkPersonIn(String src);
 int checkPersonOut(String src);
 
 int checkOutputString(String src)
 {
-        passTime(&src);
+        int tmpTime = passTime(&src);
+        // printf("%d\n", tmpTime);
         if (strncmp(src, "ARRIVE", 6) == 0)
         {
-                int chkRes = checkArrive(src);
+                int chkRes = checkArrive(src, tmpTime);
                 if (chkRes == 0)
                 {
                         return 0;
@@ -153,7 +156,7 @@ int checkOutputString(String src)
         }
         else if (strncmp(src, "OPEN", 4) == 0)
         {
-                int chkRes = checkOpen(src);
+                int chkRes = checkOpen(src, tmpTime);
                 if (chkRes == 0)
                 {
                         return 0;
@@ -161,7 +164,7 @@ int checkOutputString(String src)
         }
         else if (strncmp(src, "CLOSE", 5) == 0)
         {
-                int chkRes = checkClose(src);
+                int chkRes = checkClose(src, tmpTime);
                 if (chkRes == 0)
                 {
                         return 0;
@@ -346,7 +349,7 @@ int checkPersonIn(String src)
         return 1;
 }
 
-int checkClose(String src)
+int checkClose(String src, int closeTime)
 {
         int place = parseNextInt(&src);
         int eleId = parseNextInt(&src);
@@ -356,12 +359,16 @@ int checkClose(String src)
                 printf("Elevator%d: Door close twice at %d.\n", eleId, place);
                 return 0;
         }
+        if (closeTime - elevators[eleId].openTime < 4000) {
+        		printf("Elevator%d: Door close too fast.\n", eleId, place);
+                return 0;
+		}
         elevators[eleId].doorOpen = 0;
 
         return 1;
 }
 
-int checkOpen(String src)
+int checkOpen(String src, int openTime)
 {
         int place = parseNextInt(&src);
         int eleId = parseNextInt(&src);
@@ -372,20 +379,30 @@ int checkOpen(String src)
                 return 0;
         }
         elevators[eleId].doorOpen = 1;
+        elevators[eleId].openTime = openTime;
 
         return 1;
 }
 
-int checkArrive(String src)
+int checkArrive(String src, int arriveTime)
 {
         int place = parseNextInt(&src);
         int eleId = parseNextInt(&src);
 
-        if (abs(place - elevators[eleId].floor) != 1)
+        if (abs(place - elevators[eleId].floor) != 1 || place < 1 || place > 11)
         {
-                printf("Elevator%d: Incorrectly move to %d.\n", eleId, place);
-                return 0;
+	            printf("Elevator%d: Incorrectly move to %d.\n", eleId, place);
+	            return 0;
         }
+        if (elevators[eleId].doorOpen == 1) {
+                printf("Elevator%d: Door not closed.\n", eleId, place);
+                return 0;
+		}
+		if (arriveTime - elevators[eleId].arriveTime < 4000) {
+				printf("Elevator%d: Moved too Fast.\n", eleId, place);
+                return 0;
+		}
+		elevators[eleId].arriveTime = arriveTime;
         elevators[eleId].floor = place;
         return 1;
 }
@@ -417,13 +434,36 @@ Person parsePerson(String src)
         return res;
 }
 
-void passTime(String *src)
+int isDigit(char ch) {
+    return ch >= '0' && ch <= '9';
+}
+
+int passTime(String *src)
 {
+	int number = 0;
+    int foundDigits = 0;
         while (**src != ']')
         {
-                *src += 1;
+	        if (!isDigit(**src)) {
+	            (*src)++;
+	            continue;
+	        }
+	        if (!foundDigits) {
+	            while (!isDigit(**src) && **src != ']') {
+	                (*src)++;
+	            }
+	            foundDigits = 1;
+        	}
+        	if (isDigit(**src)) {
+            number = number * 10 + (**src - '0');
+            (*src)++;
+	        } else {
+	            break; // 遇到非数字字符，结束循环
+	        }
         }
         *src += 1;
+        
+        return number;
 }
 
 int parseNextInt(String *src)
