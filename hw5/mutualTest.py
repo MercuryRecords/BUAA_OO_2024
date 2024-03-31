@@ -1,10 +1,8 @@
-import datetime
 import os
 import platform
 import subprocess
 import multiprocessing
 import shutil
-import time
 from random import randint
 
 from generator import genData
@@ -74,6 +72,7 @@ def start_processes(jar_files):
         try:
             os.makedirs(cache_folder, exist_ok=True)
             cnt += 1
+            to_be_deleted = True
 
             # genData
             stdin_path = os.path.join(cache_folder, f"stdin.txt")
@@ -88,13 +87,10 @@ def start_processes(jar_files):
 
             with multiprocessing.Pool() as pool:
                 # 使用列表推导式创建一个包含所有任务的列表
-                tasks = [(jar_file, pool.apply_async(process_jar_file, (jar_file, cache_folder, stdin_path))) for
-                         jar_file in jar_files]
+                tasks = [(jar_file, pool.apply_async(process_jar_file, (jar_file, cache_folder, stdin_path, ))) for jar_file in jar_files]
 
                 # 遍历所有任务，并获取结果或处理超时
-                time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                 for fname, task in tasks:
-                    to_be_deleted = True
                     # print(fname)
                     try:
                         # 尝试获取结果，设置超时时间
@@ -107,8 +103,10 @@ def start_processes(jar_files):
                         # shutil.rmtree(cache_folder)
                         pass
 
-                if to_be_deleted:
-                    shutil.rmtree(cache_folder)
+            if to_be_deleted:
+                shutil.rmtree(cache_folder)
+            else:
+                break
 
             # shutil.rmtree(cache_folder)
             pass

@@ -32,12 +32,11 @@ def genData(length=70):
         time = chooseTime()
         start, end = chooseFloor(MIN_ELEVATOR, MAX_FLOOR)
         by = chooseBy()
-        ans.append((time,f"[{time:.1f}]{i + 1}-FROM-{start}-TO-{end}-BY-{by}\n"))
         while requests_by_elevator[by] >= 30:
             by = chooseBy()
         requests_by_elevator[by] += 1
         requests_by_elevator[0] += 1
-        ans.append((time, f"[{time:.1f}]{i}-FROM-{start}-TO-{end}-BY-{by}\n"))
+        ans.append((time, f"[{time:.1f}]{i+1}-FROM-{start}-TO-{end}-BY-{by}\n"))
     ans.sort(key=lambda x: x[0])
 
     # for i in range(length):
