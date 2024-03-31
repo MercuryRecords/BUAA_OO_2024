@@ -69,6 +69,7 @@ def start_processes(jar_files):
     processor_id = randint(0, 100000)
 
     while True:
+        print(cnt)
         cache_folder = os.path.join(CACHE_PATH, f"{processor_id}_iteration_{cnt}")
         try:
             os.makedirs(cache_folder, exist_ok=True)
@@ -93,21 +94,26 @@ def start_processes(jar_files):
                 # 遍历所有任务，并获取结果或处理超时
                 time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                 for fname, task in tasks:
-                    print(fname)
+                    to_be_deleted = True
+                    # print(fname)
                     try:
                         # 尝试获取结果，设置超时时间
                         result = task.get()
                         if result != "Correct":
-                            with open(f"{result}_by_{fname}_at_{time_str}.txt", "w") as fout, open(stdin_path, 'r') as fin:
+                            to_be_deleted = False
+                            with open(f"{result}_by_{fname}_at_{processor_id}_iteration_{cnt}.txt", "w") as fout, open(stdin_path, 'r') as fin:
                                 fout.write(fin.read())
                     except KeyboardInterrupt:
-                        shutil.rmtree(cache_folder)
+                        # shutil.rmtree(cache_folder)
                         pass
 
-            shutil.rmtree(cache_folder)
+                if to_be_deleted:
+                    shutil.rmtree(cache_folder)
+
+            # shutil.rmtree(cache_folder)
             pass
         except KeyboardInterrupt:
-            shutil.rmtree(cache_folder)
+            # shutil.rmtree(cache_folder)
             pass
 
 
@@ -117,7 +123,7 @@ def main():
     jar_files = get_jar_files(directory)
 
     if not jar_files:
-        print("No .jar files found in the current directory.")
+        print("No jar files found in the current directory.")
         return
 
     print(jar_files)
