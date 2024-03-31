@@ -53,7 +53,6 @@ def process_jar_file(jar_file_path, cache_folder, stdin_path):
     checker_output = subprocess.run([f"./{C_NAME}", stdin_path, stdout_path], capture_output=True,
                                     text=True).stdout.strip()
     if checker_output != "Correct.":
-        print(jar_file_path, checker_output)
         return "Error3"
     else:
         return "Correct"

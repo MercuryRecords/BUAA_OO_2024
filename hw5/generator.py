@@ -1,10 +1,13 @@
 from random import randint, random
 
-MAX_TIME = 50
 MAX_FLOOR = 11
 MIN_FLOOR = 1
 MAX_ELEVATOR = randint(2, 6)
 MIN_ELEVATOR = 1
+INTENSIVE = True if randint(0, 1) == 0 else False
+COMPRESSED = True if randint(0, 1) == 0 else False
+MAX_TIME = 50 if not COMPRESSED else 10
+
 
 def chooseFloor(_min, _max):
     start, end = randint(_min, _max), randint(_min, _max)
@@ -14,10 +17,10 @@ def chooseFloor(_min, _max):
 
 
 def chooseTime():
-    if randint(0, 1) == 0:
+    if INTENSIVE:
         return MAX_TIME * random() + 1
     else:
-        return 50.0
+        return MAX_TIME
 
 
 def chooseBy():
