@@ -16,8 +16,10 @@ else:
 CACHE_PATH = "cache"
 if platform.system() == 'Windows':
     C_NAME = 'checker.exe'
+    SHELL= True
 else:
     C_NAME = 'checker'
+    SHELL = False
 
 
 # 假设这是您要对每个.jar文件执行的函数
@@ -30,7 +32,7 @@ def process_jar_file(jar_file_path, cache_folder, stdin_path):
         datainput_proc = subprocess.Popen([FEED_PROGRAM], cwd=cache_folder, stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
         java_proc = subprocess.Popen(["java", "-jar", jar_file_path], stdin=datainput_proc.stdout,
-                                     stdout=stdout_file, stderr=subprocess.STDOUT, shell=True)
+                                     stdout=stdout_file, stderr=subprocess.STDOUT,shell=SHELL)
 
     try:
         return_code = java_proc.wait(timeout=120)
@@ -67,7 +69,7 @@ def get_jar_files(directory):
 def start_processes(jar_files):
     processor_id = randint(0, 100000)
 
-    for cnt in tqdm(range(1, 51)):
+    for cnt in tqdm(range(1, 2)):
         cache_folder = os.path.join(CACHE_PATH, f"{processor_id}_iteration_{cnt}")
         try:
             os.makedirs(cache_folder, exist_ok=True)
