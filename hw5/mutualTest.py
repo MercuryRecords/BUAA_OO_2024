@@ -48,7 +48,7 @@ def process_jar_file(jar_file_path, cache_folder, stdin_path):
         return "Error2"
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
-    checker_output = subprocess.run([f"./{C_NAME}", stdin_path, stdout_path], capture_output=True,
+    checker_output = subprocess.run([f"{C_NAME}", stdin_path, stdout_path], capture_output=True,
                                     text=True).stdout.strip()
     if checker_output != "Correct.":
         print(jar_file_path, checker_output)
@@ -104,8 +104,8 @@ def start_processes(jar_files):
 
             if to_be_deleted:
                 shutil.rmtree(cache_folder)
-            else:
-                break
+            # else:
+            #     break
 
             # shutil.rmtree(cache_folder)
             pass
