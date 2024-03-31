@@ -65,5 +65,30 @@
 - 如果测试程序中有人有错误，会立刻终止程序并将数据存放到一个新生成的文件中。
 
 ### 鸣谢
-感谢`MercuryRecords`同学打下的地基以及checker.jar
+感谢 `Vcore` 同学打下的地基以及checker.jar
+
 `hw3`施工：      `Nadleeh`
+
+
+## hw5
+
+将 `jar` 文件放在同目录下，按运行环境满足下列要求，即可运行 `mutualTest.py`。
+
+- 本评测机使用多进程同时评测多个jar文件
+- 如发现错误，则会在同目录下生成 `f"{ErrorType}_by_{jarName}_at_{cache/FolderName}.txt"`，内含输入
+- `mutualTest.py` 可多开，但能开几个由机器条件决定，自己试试吧
+
+### Windows
+
+- 同目录下放 `checker.exe`，由 `main.c` 编译而来
+- 同目录下放 `datainput_student_win64.exe`
+
+### Linux
+
+- 同目录下放 `checker`，由 `main.c` 编译而来
+- 同目录下放 `datainput_student_linux_x86_64`
+
+### 贡献情况
+
+- 感谢 `zjh` 同学的正确性判断文件
+- 施工： `Nadleeh` `Vcore`

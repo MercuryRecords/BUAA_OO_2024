@@ -6,7 +6,6 @@ MIN_FLOOR = 1
 MAX_ELEVATOR = 6
 MIN_ELEVATOR = 1
 
-
 def chooseFloor(_min, _max):
     start, end = randint(_min, _max), randint(_min, _max)
     while start == end:
@@ -15,7 +14,10 @@ def chooseFloor(_min, _max):
 
 
 def chooseTime():
-    return MAX_TIME * random() + 1
+    if randint(0, 1) == 0:
+        return MAX_TIME * random() + 1
+    else:
+        return 50.0
 
 
 def chooseBy():
@@ -23,14 +25,19 @@ def chooseBy():
 
 
 def genData(length=70):
-    length = min(length, 30 * MAX_ELEVATOR - MIN_ELEVATOR + 1)
+    MAX_ELEVATOR = randint(2, 6)
+    length = min(length, 30 * (MAX_ELEVATOR - MIN_ELEVATOR + 1))
     ans = []
     requests_by_elevator = [0 for _ in range(MAX_ELEVATOR + 1)]
+    SPECIAL_START, SPECIAL_END = chooseFloor(MIN_FLOOR, MAX_FLOOR)
     # ans is a list of time, id, start, end, by
 
     for i in range(length):
         time = chooseTime()
-        start, end = chooseFloor(MIN_ELEVATOR, MAX_FLOOR)
+        if randint(0, 1) == 0:
+            start, end = chooseFloor(MIN_FLOOR, MAX_FLOOR)
+        else:
+            start, end = SPECIAL_START, SPECIAL_END
         by = chooseBy()
         while requests_by_elevator[by] >= 30:
             by = chooseBy()
