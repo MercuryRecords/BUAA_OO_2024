@@ -51,6 +51,7 @@ def process_jar_file(jar_file_path, cache_folder, stdin_path):
     if checker_output != "Correct.":
         return "Error3"
     else:
+        # check performance
         return "Correct"
 
 
