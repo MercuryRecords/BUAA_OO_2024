@@ -291,6 +291,7 @@ int checkPersonOut(String src)
         //                curPerson->dest);
         //         return 0;
         // }
+        // printf("%d\n", pIndex);
         removePersonElevator(curEle, pIndex);
         elevators[eleId].received -= 1;
         return 1;
@@ -318,8 +319,10 @@ void personCpy(Person *dest, Person *src);
 
 void removePersonElevator(Elevator *ele, int pIndex)
 {
+	// printf("\t%d\n", ele->dlen);
         for (int i = pIndex; i < ele->dlen; i += 1)
         {
+		// printf("\t\t%d, %d, %d\n", i, ele->passengersById[i], ele->passengersById[i + 1]);
                 ele->passengersById[i] = ele->passengersById[i + 1];
                 // personCpy(&ele->passengersById[i], &ele->passengersById[i + 1]);
         }
@@ -544,6 +547,8 @@ int checkResetEnd(String src, int endTime) {
 
         elevators[eleId].toReset = 0;
         elevators[eleId].resetting = 0;
+        elevators[eleId].received = 0;
+        
         elevators[eleId].speed = elevators[eleId].toSetSpeed;
         elevators[eleId].capacity = elevators[eleId].toSetCapacity;
 
