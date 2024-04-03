@@ -3,7 +3,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-#define MAX_INPUT_INSTR_CNT 5
+#define MAX_INPUT_INSTR_CNT 500 
 #define MAX_PERSON_ELEVATOR 8
 #define ELEVATOR_CNT 6
 
@@ -135,11 +135,9 @@ String getLine(FILE *src)
         String tmp = newString(200);
         int i = 0;
 
-        fscanf(src, "%c", &ch);
-        while (ch != '\n')
+        while (fscanf(src, "%c", &ch) != -1 && ch != '\n' && i < 200)
         {
                 tmp[i] = ch;
-                fscanf(src, "%c", &ch);
                 i += 1;
         }
         tmp[i] = '\0';
@@ -164,9 +162,9 @@ int checkResetBegin(String src, int beginTime);
 int checkResetEnd(String src, int endTime);
 
 int checkOutputString(String src)
-{
+{ 
+        // printf("%s\n", src);
         int tmpTime = passTime(&src);
-        // printf("%d.\n", tmpTime);
         if (strncmp(src, "ARRIVE", 6) == 0)
         {
                 int chkRes = checkArrive(src, tmpTime);
@@ -240,6 +238,7 @@ int parseNextInt(String *src);
 int findPersonInElevator(Elevator *ele, int pId);
 void removePersonElevator(Elevator *ele, int pId);
 int personEql(Person *p0, Person *p1);
+int findPersonById(int id);
 
 int checkPersonOut(String src)
 {
@@ -274,6 +273,12 @@ int checkPersonOut(String src)
         int curPersonId = curEle->passengersById[pIndex];
         
         int index = findPersonById(curPersonId);
+        
+        if (index == -1) 
+        {
+        	printf("Elevator%d, Person%d: Person not in input at %d.\n", eleId, pId, place);
+            	return 0;
+	}
 
         persons[index].start = place;
         // printf("Person %d arrived at %d\n", curPersonId, place);
@@ -287,6 +292,7 @@ int checkPersonOut(String src)
         //         return 0;
         // }
         removePersonElevator(curEle, pIndex);
+        elevators[eleId].received -= 1;
         return 1;
 }
 
@@ -613,7 +619,7 @@ int passTime(String *src)
             number = number * 10 + (**src - '0');
             (*src)++;
 	        } else {
-	            break; // Óöµ½·ÇÊý×Ö×Ö·û£¬½áÊøÑ­»·
+	            break; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ­ï¿½ï¿½
 	        }
         }
         *src += 1;
