@@ -1,7 +1,9 @@
 import re
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
+import seaborn as sns
 
 
 # 计算期望等待时间的函数
@@ -108,17 +110,17 @@ def cal(performances):
     base_min_W, base_max_W = cal_base(all_Ws)
 
     print(
-        " {:>20}   {:>5}   {:>5}   {:>10}".format("jar_file_name", "T_run", "MT", "W"), end="")
-    print("   {:>7}   {:>5}   {:>5}   {:>5}".format("r_T_run", "r_MT", "r_W", "score"))
+        " {:>20}   {:>10}   {:>10}   {:>10}".format("jar_file_name", "T_run", "MT", "W"), end="")
+    print("   {:>10}   {:>10}   {:>10}   {:>10}".format("r_T_run", "r_MT", "r_W", "score"))
     for system in performances.keys():
         r_T_run = r_function(performances[system][0], base_min_T_run, base_max_T_run)
         r_MT = r_function(performances[system][1], base_min_MT, base_max_MT)
         r_W = r_function(performances[system][2], base_min_W, base_max_W)
         score = 0.3 * r_T_run + 0.3 * r_MT + 0.4 * r_W
-        tmp_str = (" {:>20}   {:>5.2f}   {:>5.2f}   {:>10.2f}".format(system, performances[system][0],
+        tmp_str = (" {:>20}   {:>10.2f}   {:>10.2f}   {:>10.2f}".format(system, performances[system][0],
                                                                       performances[system][1],
                                                                       performances[system][2]) +
-                   "   {:>7.2f}   {:>5.2f}   {:>5.2f}   {:>5.2f}".format(r_T_run, r_MT, r_W, score))
+                   "   {:>10.2f}   {:>10.2f}   {:>10.2f}   {:>10.2f}".format(r_T_run, r_MT, r_W, score))
         tmp_list.append((score, tmp_str))
 
     sorted_tmp_list = sorted(tmp_list, key=lambda x: x[0], reverse=True)
@@ -147,6 +149,42 @@ def main():
     plt.title('r_function(x, base_min, base_max)')
     plt.xlabel('x')
     plt.ylabel('r_function(x)')
+    plt.legend()
+
+    # 显示图像
+    plt.show()
+
+    table = [[ET(i, j) for j in range(1, 12)] for i in range(1, 12)]
+
+    # 使用这个字典创建一个 DataFrame 对象
+    df = pd.DataFrame(table)
+
+    sns.heatmap(df, annot=True, cmap='coolwarm', fmt='.2f', square=True, cbar_kws={"shrink": .5})
+
+    # 设置标题
+    plt.title('ET')
+    plt.xlabel('end')
+    plt.ylabel('start')
+
+    # 显示图形
+    plt.show()
+
+    base_min = 1
+    base_max = 11
+
+    # 创建一个包含x值的数组，从base_min到base_max，包括这两个值
+    x_values = np.linspace(base_min, base_max, 1000)
+
+    # 计算每个x值对应的函数值
+    y_values = [ET(x, 2) for x in x_values]
+
+    # 绘制图像
+    plt.plot(x_values, y_values, label='r_function')
+
+    # 添加标题和标签
+    plt.title('ET at end 2')
+    plt.xlabel('start_floor')
+    plt.ylabel('ET(x)')
     plt.legend()
 
     # 显示图像

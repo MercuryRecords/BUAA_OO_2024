@@ -466,7 +466,7 @@ int passTime(String *src)
             number = number * 10 + (**src - '0');
             (*src)++;
 	        } else {
-	            break; // Óöµ½·ÇÊý×Ö×Ö·û£¬½áÊøÑ­»·
+	            break; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ­ï¿½ï¿½
 	        }
         }
         *src += 1;
