@@ -81,10 +81,6 @@ def genData(length=70):
                     SPECIAL_START, SPECIAL_END = SPECIAL_END, SPECIAL_START
             ans.append((time, f"[{time:.1f}]{i + 1}-FROM-{start}-TO-{end}\n"))
     ans.sort(key=lambda x: x[0])
-
-    for i in range(length):
-        print(ans[i][1], end="")
-
     return [item[1] for item in ans]
 
 
