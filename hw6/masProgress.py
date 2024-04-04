@@ -5,9 +5,10 @@ import multiprocessing
 import shutil
 from tqdm import tqdm
 
+from hw6.checker import check
 from hw6.generator import genData
 
-PROCESS_COUNT = 8
+PROCESS_COUNT = 4
 ITERATIONS = 100
 PYTHON = 'python'
 CACHE_PATH = "cache"
@@ -45,6 +46,10 @@ def run_iteration(iteration):
     try:
         return_code = java_proc.wait(timeout=120)
         if return_code is None or return_code != 0:
+            java_proc.kill()
+            java_proc.wait()
+            datainput_proc.kill()
+            datainput_proc.wait()
             return f"{iteration}: Error-{return_code}", cache_folder
     except subprocess.TimeoutExpired:
         java_proc.kill()
@@ -74,15 +79,12 @@ def run_iteration(iteration):
         return f"{iteration}: Error2", cache_folder
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
-    checker_output = subprocess.run([PYTHON, "checker.py"], capture_output=True,
-                                    text=True).stdout.strip()
-    # print(f"Iteration {iteration} completed.")
-    if checker_output != "Everything's fine.":
+    if not check(input_path=stdin_path, output_path=stdout_path):
         java_proc.kill()
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration}: {checker_output}", cache_folder
+        return f"{iteration} didn't pass checker", cache_folder
     else:
         java_proc.kill()
         java_proc.wait()
@@ -92,7 +94,7 @@ def run_iteration(iteration):
 
 
 def run():
-    pool = multiprocessing.Pool(processes=PROCESS_COUNT)
+    pool = multiprocessing.Pool(processes=PROCESS_COUNT, maxtasksperchild=5)
 
     iterations = range(1, ITERATIONS + 1)
 

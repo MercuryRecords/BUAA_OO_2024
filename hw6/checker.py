@@ -326,7 +326,7 @@ def check(input_path="stdin.txt", output_path="stdout.txt"):
         if not mySystem.check_all_arrived():
             return False
 
-    print("Everything's fine.")
+    # print("Everything's fine.")
     return True
 
 
