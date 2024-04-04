@@ -3,7 +3,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-#define MAX_INPUT_INSTR_CNT 500 
+#define MAX_INPUT_INSTR_CNT 200 
 #define MAX_PERSON_ELEVATOR 8
 #define ELEVATOR_CNT 6
 
@@ -12,7 +12,6 @@ typedef struct Person
         int personId;
         int start;
         int dest;
-        int requestDone;
 } Person;
 typedef struct Elevator
 {
@@ -62,11 +61,25 @@ int main(int argc, char *argv[])
 
 
         FILE *inputFile = fopen(inputName, "r");
+        printf("input file name: %s\n", inputName);
+        
+        if (inputFile == NULL) {
+        	printf("No such input file: %s\n", inputName);
+        	return 2;
+		} 
 
         readInputData(inputFile);
+        printf("1");
         fclose(inputFile);
+        printf("2");
 
         FILE *outputFile = fopen(outputName, "r");
+        printf("output file name: %s\n", outputName);
+        
+        if (outputFile == NULL) {
+        	printf("No such output file: %s\n", outputName);
+        	return 2;
+		} 
         int chkRes = checkOutputData(outputFile);
 
         if (chkRes == 0)
@@ -370,6 +383,7 @@ int checkPersonIn(String src)
         {
                 printf("Elevator%d, Person%d: person not at %d.\n", eleId, pId, place);
                 printf("%d, %d\n", persons[index].start, place);
+                return 0;
         }
         if (curEle->floor != place)
         {
@@ -381,7 +395,7 @@ int checkPersonIn(String src)
                 printf("Elevator%d, Person%d: Door not open at %d.\n", eleId, pId, place);
                 return 0;
         }
-        if (curEle->dlen == curEle->capacity)
+        if (curEle->dlen >= curEle->capacity)
         {
                 printf("Elevator%d, Person%d: Full at %d.\n", eleId, pId, place);
                 return 0;
@@ -414,7 +428,7 @@ int checkClose(String src, int closeTime)
                 printf("Elevator%d: Incorrect floor.\n", eleId, place);
         		return 0;
 		} 
-        if (closeTime - elevators[eleId].openTime < elevators[eleId].speed) {
+        if (closeTime - elevators[eleId].openTime < 4000) {
         		printf("Elevator%d: Door close too fast.\n", eleId, place);
                 return 0;
 		}
@@ -548,6 +562,7 @@ int checkResetEnd(String src, int endTime) {
         elevators[eleId].toReset = 0;
         elevators[eleId].resetting = 0;
         elevators[eleId].received = 0;
+        elevators[eleId].dlen = 0;
         
         elevators[eleId].speed = elevators[eleId].toSetSpeed;
         elevators[eleId].capacity = elevators[eleId].toSetCapacity;
@@ -577,6 +592,7 @@ void readInputData(FILE *src)
         while (fscanf(src, "%s", tmp) != -1 && pLen < MAX_INPUT_INSTR_CNT)
         {
                 passTime(&tmp);
+                // printf("%s\n", tmp);
                 cmpRes = strncmp(tmp, "RESET", 5);
                 if (cmpRes != 0)
                 {
