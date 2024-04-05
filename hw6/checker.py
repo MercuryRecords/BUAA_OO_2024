@@ -179,7 +179,12 @@ class ElevatorSystem:
                 print(f"Elevator{elevator_id}: Not arrive at {floor}.")
                 return False
 
-            self.elevators[elevator_id].received.remove(person_id)
+            try:
+                self.elevators[elevator_id].received.remove(person_id)
+            except KeyError:
+                print(f"Elevator{elevator_id}: Person {person_id} No received.")
+                return False
+
             self.passengers_id.add(person_id)
             tmp_person = self.elevators[elevator_id].passengersInside.pop(person_id)
             tmp_person[0] = floor
@@ -199,7 +204,11 @@ class ElevatorSystem:
                 print(f"Elevator{elevator_id}: cannot receive person {person_id} when resetting.")
                 return False
             # 将乘客添加到电梯的接收列表中
-            self.passengers_id.remove(person_id)
+            try:
+                self.passengers_id.remove(person_id)
+            except KeyError:
+                print(f"Elevator{elevator_id}: Person {person_id} already received.")
+                return False
             self.elevators[elevator_id].received.add(person_id)
             return True
         else:

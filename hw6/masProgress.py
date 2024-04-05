@@ -5,22 +5,22 @@ import multiprocessing
 import shutil
 from tqdm import tqdm
 
-from hw6.checker import check
-from hw6.generator import genData
+from checker import check
+from generator import genData
 
-PROCESS_COUNT = 4
-ITERATIONS = 100
-PYTHON = 'python'
-CACHE_PATH = "cache"
+########## configs you need to modify BEGIN ##########
+
 JAR_NAME = 'oohomework_2024_21371285_hw_6.jar'
+PROCESS_COUNT = os.cpu_count() * 2
+ITERATIONS = 100
+
+########## configs you need to modify END ##########
+
+CACHE_PATH = "cache"
 if platform.system() == 'Windows':
     FEED_PROGRAM = 'datainput_student_win64.exe'
-    C_NAME = 'checker.exe'
-    SHELL = True
 else:
     FEED_PROGRAM = './datainput_student_linux_x86_64'
-    C_NAME = './checker'
-    SHELL = False
 
 
 def run_iteration(iteration):
@@ -41,7 +41,7 @@ def run_iteration(iteration):
         datainput_proc = subprocess.Popen([FEED_PROGRAM], cwd=cache_folder, stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
         java_proc = subprocess.Popen(["java", "-jar", JAR_NAME], stdin=datainput_proc.stdout,
-                                     stdout=stdout_file, stderr=subprocess.STDOUT, shell=SHELL)
+                                     stdout=stdout_file, stderr=subprocess.STDOUT)
 
     try:
         return_code = java_proc.wait(timeout=120)
@@ -94,7 +94,7 @@ def run_iteration(iteration):
 
 
 def run():
-    pool = multiprocessing.Pool(processes=PROCESS_COUNT, maxtasksperchild=5)
+    pool = multiprocessing.Pool(processes=PROCESS_COUNT, maxtasksperchild=PROCESS_COUNT)
 
     iterations = range(1, ITERATIONS + 1)
 
@@ -112,4 +112,5 @@ def run():
 
 
 if __name__ == "__main__":
+    # print(os.cpu_count())
     run()
