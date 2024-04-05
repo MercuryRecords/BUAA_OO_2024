@@ -92,3 +92,17 @@
 
 - 感谢 `zjh` 同学的正确性判断文件
 - 施工： `Nadleeh` `Vcore`
+
+## hw6
+
+### 自测
+
+将 `jar` 文件放在同目录下，切记到 `masProgress.py` 或 `forTLE.py` 开头中修改文件名
+
+- Windows 环境：同目录下放 `datainput_student_win64.exe`
+- Linux 环境：同目录下放 `datainput_student_linux_x86_64`
+
+评测结果：保留出错的文件，出错内容同步出现在输出框和同目录下 `res.txt` 文件内
+
+- 感谢 `zjh` 同学的正确性判断文件（hw5），从其改写了 `python` 版的正确性判断
+- 施工： `Vcore` 
