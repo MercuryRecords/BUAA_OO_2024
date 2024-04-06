@@ -10,14 +10,13 @@ from generator import genData
 
 ########## configs you need to modify BEGIN ##########
 
-JAR_NAME = 'Nadleeh.jar'
+JAR_NAME = ''
 PROCESS_COUNT = os.cpu_count() * 2
-ITERATIONS = 1000
-DEBUG = False
+ITERATIONS = 20
 
 ########## configs you need to modify END ##########
 
-CACHE_PATH = "cache"
+CACHE_PATH = "cache"+JAR_NAME.split('.')[0]
 if platform.system() == 'Windows':
     FEED_PROGRAM = 'datainput_student_win64.exe'
 else:
@@ -80,7 +79,7 @@ def run_iteration(iteration):
         return f"{iteration}: Error2", cache_folder
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
-    if not check(input_path=stdin_path, output_path=stdout_path,debug=DEBUG):
+    if not check(input_path=stdin_path, output_path=stdout_path):
         java_proc.kill()
         java_proc.wait()
         datainput_proc.kill()
@@ -105,13 +104,24 @@ def run():
             if result[0] != "Correct":
                 print(result[0])
                 with open("res.txt", "a+") as f:
-                    f.write(result[0] + "\n")
+                    f.write(JAR_NAME + result[0] + "\n")
             else:
                 shutil.rmtree(result[1])
     pool.close()
     pool.join()
+    if not os.listdir(CACHE_PATH):
+        print(JAR_NAME, " CORRECT, DEL CACHE", JAR_NAME)
+        os.rmdir(CACHE_PATH)
 
 
 if __name__ == "__main__":
     # print(os.cpu_count())
-    run()
+    files_and_dirs = os.listdir('.')
+
+    jar_names = [f for f in files_and_dirs if f.endswith(
+        '.jar')]
+    print(jar_names)
+    for name in jar_names:
+        JAR_NAME = name
+        CACHE_PATH = "cache"+JAR_NAME.split('.')[0]
+        run()

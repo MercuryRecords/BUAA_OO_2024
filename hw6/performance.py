@@ -63,7 +63,7 @@ def cal_performance(stdin, stdout):
                 time_stamp = float(match.group(1))
                 passenger = int(match.group(2))
                 requests[passenger][1] = time_stamp - requests[passenger][0]
-        MT = max(requests.values()[1])
+        MT = max(list(requests.values())[1])
 
     with open(stdout, 'rb') as file:
         pattern = re.compile(r"\[(\d+\.\d+)]")
