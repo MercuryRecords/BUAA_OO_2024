@@ -340,7 +340,7 @@ def check(input_path="stdin.txt", output_path="stdout.txt"):
 
 
 def main():
-    check()
+    print(check())
 
 
 if __name__ == "__main__":
