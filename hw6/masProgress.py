@@ -110,6 +110,9 @@ def run():
                 shutil.rmtree(result[1])
     pool.close()
     pool.join()
+    if not os.listdir(CACHE_PATH):
+        print(JAR_NAME, " CORRECT, DEL CACHE", JAR_NAME)
+        os.rmdir(CACHE_PATH)
 
 
 if __name__ == "__main__":
