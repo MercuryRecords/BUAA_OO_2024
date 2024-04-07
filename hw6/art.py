@@ -4,6 +4,7 @@ import subprocess
 import multiprocessing
 import shutil
 from random import randint
+import numpy as np
 from tqdm import tqdm
 from generator import genData
 from performance import cal_performance, cal
@@ -46,8 +47,8 @@ def process_jar_file(jar_file_path, cache_folder, stdin_path, performances):
         return "Error2"
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
-    checker_output = check(stdin_path,stdout_path)
-    if checker_output != True:
+    checker_output = check(stdin_path, stdout_path)
+    if checker_output is False:
         return "Error3"
     else:
         a, b, c = cal_performance(stdin_path, stdout_path)
@@ -74,7 +75,7 @@ def start_processes(jar_files):
         # genData
         stdin_path = os.path.join(cache_folder, f"stdin.txt")
         with open(stdin_path, "w") as f:
-            tmp_stdin = genData()
+            tmp_stdin = genData(mutualTest=True)
             for entry in tmp_stdin:
                 f.write(entry)
 
@@ -87,9 +88,8 @@ def start_processes(jar_files):
 
         with multiprocessing.Pool() as pool:
             # 使用列表推导式创建一个包含所有任务的列表
-            tasks = [(jar_file, pool.apply_async(process_jar_file, (jar_file, cache_folder, stdin_path, performances, ))) for
-                     jar_file in jar_files]
-
+            tasks = [(jar_file, pool.apply_async(process_jar_file, (jar_file, cache_folder, stdin_path, performances,)))
+                     for jar_file in jar_files]
             # 遍历所有任务，并获取结果或处理超时
             for fname, task in tasks:
                 # print(fname)
@@ -98,16 +98,14 @@ def start_processes(jar_files):
                     result = task.get()
                     if result != "Correct":
                         to_be_deleted = False
-                        with open(f"{result}_by_{fname}_at_{processor_id}_iteration_{processor_id}.txt", "w") as fout, open(
-                                stdin_path, 'r') as fin:
+                        with open(f"{result}_by_{fname}_at_{processor_id}_iteration_{processor_id}.txt",
+                                  "w") as fout, open(stdin_path, 'r') as fin:
                             fout.write(fin.read())
                 except KeyboardInterrupt:
                     # shutil.rmtree(cache_folder)
                     pass
-
             if to_be_deleted:
-                # print(performances)
-                cal(performances)
+                return cal(performances)
             # shutil.rmtree(cache_folder)
         # else:
         #     break
@@ -117,19 +115,52 @@ def start_processes(jar_files):
     except KeyboardInterrupt:
         # shutil.rmtree(cache_folder)
         pass
+    return None
 
 
 # 主函数
 def main():
     directory = os.getcwd()  # 获取当前工作目录
     jar_files = get_jar_files(directory)
-
-    if not jar_files:
-        print("No jar files found in the current directory.")
-        return
-
     print(jar_files)
-    start_processes(jar_files)
+
+    all_performances = {}
+    for _ in tqdm(range(1)):  # 您希望运行的次数
+        if not jar_files:
+            continue
+
+        performances = start_processes(jar_files)
+        if performances is None:
+            continue
+        for jar_file, performance in performances.items():
+            if jar_file not in all_performances:
+                all_performances[jar_file] = []
+            all_performances[jar_file].append(performance)
+
+    # 计算平均表现
+    average_performances = {}
+    tmp_list = []
+    for jar_file, performances in all_performances.items():
+        r_T_runs = [p[0] for p in performances]
+        r_MTs = [p[1] for p in performances]
+        r_Ws = [p[2] for p in performances]
+        scores = [p[3] for p in performances]
+
+        average_performances[jar_file] = (
+            np.mean(r_T_runs), np.mean(r_MTs), np.mean(r_Ws), np.mean(scores)
+        )
+
+    # 打印平均表现
+    print("{:>20}   {:>10}   {:>10}   {:>10}   {:>10}".format("jar_file_name", "r_T_run", "r_MT", "r_W", "score"))
+    for jar_file, performance in average_performances.items():
+        # print(f"{jar_file}: {performance}")
+        tmp_list.append((performance[3], (
+            "{:>20}   {:>10.2f}   {:>10.2f}   {:>10.2f}   {:>10.2f}".format(jar_file, performance[0], performance[1],
+                                                                            performance[2], performance[3]))))
+
+    sorted_tmp_list = sorted(tmp_list, key=lambda x: x[0], reverse=True)
+    for score, tmp_str in sorted_tmp_list:
+        print(tmp_str)
 
 
 if __name__ == "__main__":
