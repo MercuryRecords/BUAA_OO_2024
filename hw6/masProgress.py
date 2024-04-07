@@ -13,9 +13,9 @@ from generator import genData
 
 ########## configs you need to modify BEGIN ##########
 
-JAR_NAME = 'sc-mixed.jar'
-PROCESS_COUNT = os.cpu_count() * 2
-ITERATIONS = 1000
+JAR_NAME = '2.jar'
+PROCESS_COUNT = 5
+ITERATIONS = 100
 DEBUG = False
 
 ########## configs you need to modify END ##########
