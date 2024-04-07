@@ -3,6 +3,8 @@ import platform
 import subprocess
 import multiprocessing
 import shutil
+import sys
+
 from tqdm import tqdm
 
 from checker import check
@@ -24,8 +26,9 @@ else:
     FEED_PROGRAM = './datainput_student_linux_x86_64'
 
 
-def run_iteration(iteration):
-    cache_folder = os.path.join(CACHE_PATH, f"iteration_{iteration}")
+def run_iteration(iteration, jar_name):
+    fname = jar_name.split(".")[0]
+    cache_folder = os.path.join(CACHE_PATH, f"{fname}_iteration_{iteration}")
     os.makedirs(cache_folder, exist_ok=True)
 
     stdin_path = os.path.join(cache_folder, f"stdin.txt")
@@ -41,7 +44,7 @@ def run_iteration(iteration):
     with open(stdout_path, "w") as stdout_file:
         datainput_proc = subprocess.Popen([FEED_PROGRAM], cwd=cache_folder, stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
-        java_proc = subprocess.Popen(["java", "-jar", JAR_NAME], stdin=datainput_proc.stdout,
+        java_proc = subprocess.Popen(["java", "-jar", jar_name], stdin=datainput_proc.stdout,
                                      stdout=stdout_file, stderr=subprocess.STDOUT)
 
     try:
@@ -81,7 +84,7 @@ def run_iteration(iteration):
         return f"{iteration}: Error2", cache_folder
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
-    if not check(input_path=stdin_path, output_path=stdout_path,debug=DEBUG):
+    if not check(input_path=stdin_path, output_path=stdout_path, debug=DEBUG):
         java_proc.kill()
         java_proc.wait()
         datainput_proc.kill()
@@ -95,13 +98,14 @@ def run_iteration(iteration):
         return "Correct", cache_folder
 
 
-def run():
+def run(jar_name):
     pool = multiprocessing.Pool(processes=PROCESS_COUNT, maxtasksperchild=PROCESS_COUNT)
 
     iterations = range(1, ITERATIONS + 1)
+    fnames = [jar_name for _ in range(1, ITERATIONS + 1)]
 
     with tqdm(total=len(iterations), desc="Iterations") as pbar:
-        for result in pool.imap_unordered(run_iteration, iterations):
+        for result in pool.imap_unordered(run_iteration, iterations, fnames):
             pbar.update()
             if result[0] != "Correct":
                 print(result[0])
@@ -115,4 +119,7 @@ def run():
 
 if __name__ == "__main__":
     # print(os.cpu_count())
-    run()
+    if len(sys.argv) == 2:
+        run(sys.argv[1])
+    else:
+        run(JAR_NAME)
