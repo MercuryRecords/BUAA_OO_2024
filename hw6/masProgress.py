@@ -10,7 +10,7 @@ from generator import genData
 
 ########## configs you need to modify BEGIN ##########
 
-JAR_NAME = 'Nadleeh.jar'
+JAR_NAME = 'sc-mixed.jar'
 PROCESS_COUNT = os.cpu_count() * 2
 ITERATIONS = 1000
 DEBUG = False
@@ -57,6 +57,7 @@ def run_iteration(iteration):
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
+        check(input_path=stdin_path, output_path=stdout_path)
         return f"{iteration}: OverTime1", cache_folder
 
     # 检查子进程是否已经结束
@@ -110,9 +111,6 @@ def run():
                 shutil.rmtree(result[1])
     pool.close()
     pool.join()
-    if not os.listdir(CACHE_PATH):
-        print(JAR_NAME, " CORRECT, DEL CACHE", JAR_NAME)
-        os.rmdir(CACHE_PATH)
 
 
 if __name__ == "__main__":
