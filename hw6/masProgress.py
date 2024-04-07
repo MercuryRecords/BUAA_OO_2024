@@ -56,14 +56,14 @@ def run_iteration(argvs):
             java_proc.wait()
             datainput_proc.kill()
             datainput_proc.wait()
-            return f"{iteration}: Error-{return_code}", cache_folder
+            return f"{jar_name}_at_{iteration}: Error-{return_code}", cache_folder
     except subprocess.TimeoutExpired:
         java_proc.kill()
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
         check(input_path=stdin_path, output_path=stdout_path)
-        return f"{iteration}: OverTime1", cache_folder
+        return f"{jar_name}_at_{iteration}: OverTime1", cache_folder
 
     # 检查子进程是否已经结束
     if java_proc.poll() is None:
@@ -71,19 +71,19 @@ def run_iteration(argvs):
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration}: OverTime2", cache_folder
+        return f"{jar_name}_at_{iteration}: OverTime2", cache_folder
     if java_proc.poll() != 0:
         java_proc.kill()
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration}: OverTime3", cache_folder
+        return f"{jar_name}_at_{iteration}: OverTime3", cache_folder
     if java_proc.stderr:
         java_proc.kill()
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration}: Error2", cache_folder
+        return f"{jar_name}_at_{iteration}: Error2", cache_folder
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
     if not check(input_path=stdin_path, output_path=stdout_path, debug=DEBUG):
@@ -91,7 +91,7 @@ def run_iteration(argvs):
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration} didn't pass checker", cache_folder
+        return f"{jar_name}_at_{iteration} didn't pass checker", cache_folder
     else:
         java_proc.kill()
         java_proc.wait()
