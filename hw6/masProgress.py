@@ -1,3 +1,4 @@
+import itertools
 import os
 import platform
 import subprocess
@@ -26,7 +27,8 @@ else:
     FEED_PROGRAM = './datainput_student_linux_x86_64'
 
 
-def run_iteration(iteration, jar_name):
+def run_iteration(argvs):
+    iteration, jar_name = argvs
     fname = jar_name.split(".")[0]
     cache_folder = os.path.join(CACHE_PATH, f"{fname}_iteration_{iteration}")
     os.makedirs(cache_folder, exist_ok=True)
@@ -48,7 +50,7 @@ def run_iteration(iteration, jar_name):
                                      stdout=stdout_file, stderr=subprocess.STDOUT)
 
     try:
-        return_code = java_proc.wait(timeout=120)
+        return_code = java_proc.wait(timeout=220)
         if return_code is None or return_code != 0:
             java_proc.kill()
             java_proc.wait()
@@ -103,9 +105,10 @@ def run(jar_name):
 
     iterations = range(1, ITERATIONS + 1)
     fnames = [jar_name for _ in range(1, ITERATIONS + 1)]
+    argvs = [(i, jar_name) for i in range(1, ITERATIONS + 1)]
 
     with tqdm(total=len(iterations), desc="Iterations") as pbar:
-        for result in pool.imap_unordered(run_iteration, iterations, fnames):
+        for result in pool.imap_unordered(run_iteration, argvs):
             pbar.update()
             if result[0] != "Correct":
                 print(result[0])
