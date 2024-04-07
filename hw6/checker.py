@@ -294,11 +294,17 @@ class ElevatorSystem:
 
 def parse_time_stamp(tmp_str: str):
     to_parse = tmp_str.split(']')[0]
-    return float(to_parse[1:])
+    try:
+        ret = float(to_parse[1:])
+        return ret
+    except ValueError:
+        return None
 
 
 def check_output_string(line: str, system: ElevatorSystem, debug: bool):
     tmp_time = parse_time_stamp(line)
+    if tmp_time is None:
+        return False
     tmp_output = line.split(']')[1]
     if tmp_output.startswith("ARRIVE"):
         return system.check_arrive(tmp_output, tmp_time)
