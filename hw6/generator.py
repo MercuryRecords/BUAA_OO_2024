@@ -21,7 +21,7 @@ def chooseTime(base: float = 0.0):
         return max(base + 5, MAX_TIME * random() + 1)
     else:
         if INTENSIVE:
-            return MAX_TIME * random() + 1
+            return min(MAX_TIME * random() + 1, 50.0)
         else:
             return MAX_TIME
 
