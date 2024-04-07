@@ -1,5 +1,7 @@
 import re
+
 DEBUG_FLAG = '#'
+
 
 class Elevator:
     def __init__(self):
@@ -321,7 +323,7 @@ def check_output_string(line: str, system: ElevatorSystem, debug: bool):
     return False
 
 
-def check(input_path="stdin.txt", output_path="stdout.txt", debug =False):
+def check(input_path="stdin.txt", output_path="stdout.txt", debug=False):
     mySystem = ElevatorSystem()
     with open(input_path, "r") as fin:
         for line in fin.readlines():
@@ -342,7 +344,7 @@ def check(input_path="stdin.txt", output_path="stdout.txt", debug =False):
 
 
 def main():
-    print(check(input_path="stdin.txt", output_path="stdout.txt", debug =False))
+    print(check(input_path="stdin.txt", output_path="stdout.txt", debug=False))
 
 
 if __name__ == "__main__":
