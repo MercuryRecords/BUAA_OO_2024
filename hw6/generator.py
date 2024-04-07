@@ -40,21 +40,23 @@ def chooseSpeed():
     return tmp[randint(0, len(tmp) - 1)]
 
 
-def genData(length=70):
+def genData(length=70, mutualTest=False):
     length = min(length, 30 * (MAX_ELEVATOR - MIN_ELEVATOR + 1))
     ans = []
-    requests_by_elevator = [0 for _ in range(MAX_ELEVATOR + 1)]
     SPECIAL_START, SPECIAL_END = 11, 2
     reset_cnt = 0
     last_reset = dict()
     for i in range(1, MAX_ELEVATOR + 1):
         last_reset[i] = 0.0
+    alreadyReset = dict()
+    for i in range(1, MAX_ELEVATOR + 1):
+        alreadyReset[i] = False
     # ans is a list of time, id, start, end, by
 
     for i in range(length):
         if reset_cnt < 20 and randint(1, 10) < 4:  # 37分出reset
             id = chooseElevator()
-            if last_reset[id] >= MAX_TIME - 5:
+            if (mutualTest and alreadyReset[id]) or last_reset[id] >= MAX_TIME - 5:
                 time = chooseTime()
                 if randint(0, 1) == 0:
                     start, end = chooseFloor(MIN_FLOOR, MAX_FLOOR)
@@ -65,6 +67,8 @@ def genData(length=70):
                 ans.append((time, f"[{time:.1f}]{i + 1}-FROM-{start}-TO-{end}\n"))
                 continue
 
+            if mutualTest:
+                alreadyReset[id] = True
             time = chooseTime(last_reset[id])
             last_reset[id] = time
             capacity = chooseCapacity()
@@ -85,4 +89,4 @@ def genData(length=70):
 
 
 if __name__ == "__main__":
-    ans = genData(70)
+    print(genData(70))
