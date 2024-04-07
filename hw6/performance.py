@@ -47,7 +47,7 @@ def cal_performance(stdin, stdout):
                 expectation = ET(start_floor, dest_floor)
                 request_id = int(request_id)
                 time_stamp = float(time_stamp)
-                requests[request_id] = [time_stamp + expectation,0]
+                requests[request_id] = [time_stamp + expectation, 0]
 
     pattern = re.compile(r"\[(\d+\.\d+)]OUT-(\d+)")
     with open(stdout, 'r') as file:
@@ -63,7 +63,7 @@ def cal_performance(stdin, stdout):
                 time_stamp = float(match.group(1))
                 passenger = int(match.group(2))
                 requests[passenger][1] = time_stamp - requests[passenger][0]
-        MT = max(list(requests.values())[1])
+        MT = max([val for val in requests.values()])
 
     with open(stdout, 'rb') as file:
         pattern = re.compile(r"\[(\d+\.\d+)]")
@@ -101,32 +101,36 @@ def cal_base(x_values):
 
 def cal(performances):
     tmp_list = list()
+    result_dict = {}
     all_T_runs = [T_run for T_run, _, _ in performances.values()]
-    all_MTs = [MT for _, MT, _ in performances.values()]
+    all_MTs = [MT[1] for _, MT, _ in performances.values()]
     all_Ws = [W for _, _, W in performances.values()]
 
     base_min_T_run, base_max_T_run = cal_base(all_T_runs)
     base_min_MT, base_max_MT = cal_base(all_MTs)
     base_min_W, base_max_W = cal_base(all_Ws)
 
-    print(
-        " {:>20}   {:>10}   {:>10}   {:>10}".format("jar_file_name", "T_run", "MT", "W"), end="")
-    print("   {:>10}   {:>10}   {:>10}   {:>10}".format("r_T_run", "r_MT", "r_W", "score"))
+    # print(
+    #     " {:>20}   {:>10}   {:>10}   {:>10}".format("jar_file_name", "T_run", "MT", "W"), end="")
+    # print("   {:>10}   {:>10}   {:>10}   {:>10}".format("r_T_run", "r_MT", "r_W", "score"))
     for system in performances.keys():
         r_T_run = r_function(performances[system][0], base_min_T_run, base_max_T_run)
-        r_MT = r_function(performances[system][1], base_min_MT, base_max_MT)
+        r_MT = r_function(performances[system][1][1], base_min_MT, base_max_MT)
         r_W = r_function(performances[system][2], base_min_W, base_max_W)
         score = 0.3 * r_T_run + 0.3 * r_MT + 0.4 * r_W
         tmp_str = (" {:>20}   {:>10.2f}   {:>10.2f}   {:>10.2f}".format(system, performances[system][0],
-                                                                      performances[system][1],
-                                                                      performances[system][2]) +
+                                                                        performances[system][1][1],
+                                                                        performances[system][2]) +
                    "   {:>10.2f}   {:>10.2f}   {:>10.2f}   {:>10.2f}".format(r_T_run, r_MT, r_W, score))
         tmp_list.append((score, tmp_str))
+        result_dict[system] = (r_T_run, r_MT, r_W, score)
 
     sorted_tmp_list = sorted(tmp_list, key=lambda x: x[0], reverse=True)
 
-    for score, tmp_str in sorted_tmp_list:
-        print(tmp_str)
+    # for score, tmp_str in sorted_tmp_list:
+    #     print(tmp_str)
+
+    return result_dict
 
 
 # 主函数
