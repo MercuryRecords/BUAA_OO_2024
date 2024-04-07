@@ -9,9 +9,9 @@ from checker import check
 
 ########## configs you need to modify BEGIN ##########
 
-JAR_NAME = 'oohomework_2024_21371285_hw_6.jar'
+JAR_NAME = 'hw6.jar'
 PROCESS_COUNT = os.cpu_count() * 2
-ITERATIONS = 100
+ITERATIONS = 1000
 
 ########## configs you need to modify END ##########
 
@@ -23,7 +23,7 @@ else:
 
 
 def run_iteration(iteration):
-    cache_folder = os.path.join(CACHE_PATH, f"iteration_{iteration}")
+    cache_folder = os.path.join(CACHE_PATH, f"tle_iteration_{iteration}")
     os.makedirs(cache_folder, exist_ok=True)
 
     stdin_path = os.path.join(os.getcwd(), "stdin.txt")
@@ -45,13 +45,14 @@ def run_iteration(iteration):
             java_proc.wait()
             datainput_proc.kill()
             datainput_proc.wait()
-            return f"{iteration}: Error-{return_code}", cache_folder
+            return f"tle_{iteration}: Error-{return_code}", cache_folder
     except subprocess.TimeoutExpired:
         java_proc.kill()
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration}: OverTime1", cache_folder
+        check(input_path=stdin_path, output_path=stdout_path)
+        return f"tle_{iteration}: OverTime1", cache_folder
 
     # 检查子进程是否已经结束
     if java_proc.poll() is None:
@@ -59,19 +60,19 @@ def run_iteration(iteration):
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration}: OverTime2", cache_folder
+        return f"tle_{iteration}: OverTime2", cache_folder
     if java_proc.poll() != 0:
         java_proc.kill()
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration}: OverTime3", cache_folder
+        return f"tle_{iteration}: OverTime3", cache_folder
     if java_proc.stderr:
         java_proc.kill()
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration}: Error2", cache_folder
+        return f"tle_{iteration}: Error2", cache_folder
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
     if not check(input_path=stdin_path, output_path=stdout_path):
@@ -79,7 +80,7 @@ def run_iteration(iteration):
         java_proc.wait()
         datainput_proc.kill()
         datainput_proc.wait()
-        return f"{iteration} didn't pass checker", cache_folder
+        return f"tle_{iteration} didn't pass checker", cache_folder
     else:
         java_proc.kill()
         java_proc.wait()
@@ -98,7 +99,7 @@ def run():
             pbar.update()
             if result[0] != "Correct":
                 print(result[0])
-                with open("res.txt", "a+") as f:
+                with open("tle_res.txt", "a+") as f:
                     f.write(result[0] + "\n")
             else:
                 shutil.rmtree(result[1])
