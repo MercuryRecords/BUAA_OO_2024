@@ -41,7 +41,7 @@ def run_iteration(iteration):
         datainput_proc = subprocess.Popen([FEED_PROGRAM], cwd=cache_folder, stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
         java_proc = subprocess.Popen(["java", "-jar", JAR_NAME], stdin=datainput_proc.stdout,
-                                     stdout=stdout_file, stderr=subprocess.STDOUT)
+                                     stdout=stdout_file, stderr=subprocess.STDOUT, shell=True)
 
     try:
         return_code = java_proc.wait(timeout=120)
@@ -94,7 +94,8 @@ def run_iteration(iteration):
 
 
 def run():
-    pool = multiprocessing.Pool(processes=PROCESS_COUNT, maxtasksperchild=PROCESS_COUNT)
+    pool = multiprocessing.Pool(
+        processes=PROCESS_COUNT, maxtasksperchild=PROCESS_COUNT)
 
     iterations = range(1, ITERATIONS + 1)
 
