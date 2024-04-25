@@ -2,7 +2,7 @@ import re
 DEBUG_FLAG = '#'
 
 
-def check(file1 = 'stdin_1.txt', file2 = 'stdin_1.txt'):
+def check(file1 = 'stdout_1.txt', file2 = 'stdout_2.txt'):
     with open(file1, 'r') as f1, open(file2, 'r') as f2:
         for line1, line2 in zip(f1, f2):
             # 忽略以 # 开头的行
@@ -17,3 +17,6 @@ def check(file1 = 'stdin_1.txt', file2 = 'stdin_1.txt'):
         if sum(1 for line in f1 if not line.startswith(DEBUG_FLAG)) != sum(1 for line in f2 if not line.startswith('#')):
             return False
     return True
+
+if __name__ == '__main__':
+    print(check())

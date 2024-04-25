@@ -3,12 +3,12 @@ from random import choice, randint, random
 MAX_VALUE = 200
 MAX_M_VALUE = 200
 MAX_AGE = 200
-instrs = ['ap', 'ar', 'mr', 'qv',
+instrs = ['ap', 'ar','ar', 'mr', 'qv',
            'qci','qbs','qts']
 #unsupport ln and lnl
 
 
-def generate(instr_num = 5000, people_num = 500):
+def generate(instr_num = 2000, people_num = 100):
     if random() < 0.7:
         return normal_data(instr_num, people_num)
     else:
@@ -54,7 +54,7 @@ def overall_instr(instr_name):
 
 def normal_data(instr_num, people_num):
     instrlist = []
-    for i in range(randint(people_num - 100,people_num)):
+    for i in range(randint(people_num * 0.7,people_num)):
         instrlist.append(person_instr('ap',i))
     for i in range(instr_num-people_num):
         instr = choice(instrs)

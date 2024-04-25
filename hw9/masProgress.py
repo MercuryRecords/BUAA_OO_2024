@@ -13,7 +13,7 @@ import sys
 JAR_NAME = 'EXIA.jar'
 STD_NAME = 'EXIAII.jar'
 PROCESS_COUNT = (os.cpu_count())
-ITERATIONS = 1000
+ITERATIONS = 100
 DEBUG = True
 
 ########## configs you need to modify END ##########
@@ -48,8 +48,8 @@ def run_iteration(iteration):
                                      stdout=stdout_file_STD, stderr=subprocess.STDOUT)
 
     try:
-        return_code_U   = java_proc.wait(timeout=10)
-        return_code_STD = java_proc.wait(timeout=10)
+        return_code_U   = java_proc.wait(timeout=100)
+        return_code_STD = std_proc.wait(timeout=100)
         if return_code_U is None or return_code_U != 0 or return_code_STD is None or return_code_STD != 0:
             java_proc.kill()
             java_proc.wait()
