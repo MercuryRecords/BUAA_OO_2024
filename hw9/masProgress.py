@@ -20,6 +20,7 @@ DEBUG = True
 
 CACHE_PATH = "cache"
 
+
 def run_iteration(iteration):
     cache_folder = os.path.join(CACHE_PATH, f"iteration_{iteration}")
     os.makedirs(cache_folder, exist_ok=True)
@@ -30,25 +31,25 @@ def run_iteration(iteration):
         tmp_stdin = generate()
         for entry in tmp_stdin:
             f.write(entry)
-            stdin+=entry
+            stdin += entry
 
     # run your program
     stdout_path_U = os.path.join(cache_folder, f"stdout_1.txt")
     stdout_path_STD = os.path.join(cache_folder, f"stdout_2.txt")
     with open(stdin_path, 'r') as stdin_file:
-    # 打开 stdout 文件以写入输出数据
+        # 打开 stdout 文件以写入输出数据
         with open(stdout_path_U, 'w') as stdout_file_U:
-        # 执行 Java 程序，并将 stdin 文件作为输入
+            # 执行 Java 程序，并将 stdin 文件作为输入
             java_proc = subprocess.Popen(["java", "-jar", JAR_NAME], stdin=stdin_file,
-                                     stdout=stdout_file_U, stderr=subprocess.STDOUT)
-            
-    with open(stdin_path, 'r') as stdin_file:        
+                                         stdout=stdout_file_U, stderr=subprocess.STDOUT)
+
+    with open(stdin_path, 'r') as stdin_file:
         with open(stdout_path_STD, 'w') as stdout_file_STD:
             std_proc = subprocess.Popen(["java", "-jar", STD_NAME], stdin=stdin_file,
-                                     stdout=stdout_file_STD, stderr=subprocess.STDOUT)
+                                        stdout=stdout_file_STD, stderr=subprocess.STDOUT)
 
     try:
-        return_code_U   = java_proc.wait(timeout=100)
+        return_code_U = java_proc.wait(timeout=100)
         return_code_STD = std_proc.wait(timeout=100)
         if return_code_U is None or return_code_U != 0 or return_code_STD is None or return_code_STD != 0:
             java_proc.kill()
