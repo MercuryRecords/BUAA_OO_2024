@@ -11,15 +11,14 @@ import sys
 ########## configs you need to modify BEGIN ##########
 
 JAR_NAME = 'EXIA.jar'
-STD_NAME = 'EXIAII.jar'
-PROCESS_COUNT = (os.cpu_count())
-ITERATIONS = 100
+STD_NAME = 'grl.jar'
+PROCESS_COUNT = int(os.cpu_count())
+ITERATIONS = 1000
 DEBUG = True
 
 ########## configs you need to modify END ##########
 
 CACHE_PATH = "cache"
-
 
 def run_iteration(iteration):
     cache_folder = os.path.join(CACHE_PATH, f"iteration_{iteration}")
@@ -31,26 +30,26 @@ def run_iteration(iteration):
         tmp_stdin = generate()
         for entry in tmp_stdin:
             f.write(entry)
-            stdin += entry
+            stdin+=entry
 
     # run your program
     stdout_path_U = os.path.join(cache_folder, f"stdout_1.txt")
     stdout_path_STD = os.path.join(cache_folder, f"stdout_2.txt")
     with open(stdin_path, 'r') as stdin_file:
-        # 打开 stdout 文件以写入输出数据
+    # 打开 stdout 文件以写入输出数据
         with open(stdout_path_U, 'w') as stdout_file_U:
-            # 执行 Java 程序，并将 stdin 文件作为输入
+        # 执行 Java 程序，并将 stdin 文件作为输入
             java_proc = subprocess.Popen(["java", "-jar", JAR_NAME], stdin=stdin_file,
-                                         stdout=stdout_file_U, stderr=subprocess.STDOUT)
-
-    with open(stdin_path, 'r') as stdin_file:
+                                     stdout=stdout_file_U, stderr=subprocess.STDOUT)
+            
+    with open(stdin_path, 'r') as stdin_file:        
         with open(stdout_path_STD, 'w') as stdout_file_STD:
             std_proc = subprocess.Popen(["java", "-jar", STD_NAME], stdin=stdin_file,
-                                        stdout=stdout_file_STD, stderr=subprocess.STDOUT)
+                                     stdout=stdout_file_STD, stderr=subprocess.STDOUT)
 
     try:
-        return_code_U = java_proc.wait(timeout=100)
-        return_code_STD = std_proc.wait(timeout=100)
+        return_code_U   = java_proc.wait(timeout=10)
+        return_code_STD = std_proc.wait(timeout=10)
         if return_code_U is None or return_code_U != 0 or return_code_STD is None or return_code_STD != 0:
             java_proc.kill()
             java_proc.wait()
@@ -85,7 +84,7 @@ def run_iteration(iteration):
         return f"{iteration}: Error2", cache_folder
 
     # 运行 checker，传递 stdin.txt 和 stdout.txt 的路径作为命令行参数
-    if not check(str(stdout_path_U), str(stdout_path_STD)):
+    if not check(str(stdout_path_U), str(stdout_path_STD),str(stdin_path)):
         java_proc.kill()
         java_proc.wait()
         std_proc.kill()
