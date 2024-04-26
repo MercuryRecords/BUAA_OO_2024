@@ -33,7 +33,7 @@ def relation_instr(instr_name,id1,id2,value):
     instr += ' '
     instr += str(id2)
     instr += ' '
-    instr += str(randint(0, MAX_VALUE))
+    instr += str(value)
     instr += '\n'
     return instr
 
