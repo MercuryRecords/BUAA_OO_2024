@@ -1,4 +1,4 @@
-from random import choice, randint, random
+from random import choice, randint, random, sample
 
 MAX_VALUE = 200
 MAX_M_VALUE = 200
@@ -10,13 +10,11 @@ instrs = ['ap', 'ar', 'ar', 'mr', 'qv',
 # unsupport ln and lnl
 
 
-def generate(instr_num=10000, people_num=300):  # 强测强度
-    if random() < 0.7:
+def generate(crazy=False, instr_num=3000 - 1, people_num=300):  # 互测强度
+    if random() < 0.7 and crazy is False:
         return normal_data(instr_num, people_num)
-    elif random() < 0.9:
-        return crazy_data(instr_num, people_num)
     else:
-        return crazy_data(2000, 20)
+        return crazy_data(instr_num, people_num)
 
 
 def person_instr(instr_name, id):
@@ -60,8 +58,24 @@ def overall_instr(instr_name):
     return instr
 
 
-def normal_data(instr_num, people_num):
+def ln_data(people_num):
+    sample_num = min(people_num, 100)
+    sample_list = sample(range(1, people_num + 1), sample_num)
     instrlist = []
+    # 添加 load_network 指令和对应的 n+2 行数据
+    instrlist.append(f"ln {sample_num}\n")
+    instrlist.append(' '.join([str(i) for i in sample_list]) + '\n')
+    instrlist.append(' '.join(["MS-" + str(i) for i in sample_list]) + '\n')
+    instrlist.append(' '.join([str(randint(0, MAX_AGE)) for _ in sample_list]) + '\n')
+    # 接下来是 n-1 行关系数据
+    for i in range(1, sample_num):
+        values = [randint(1, MAX_VALUE) if random() < 0.9 else 0 for _ in range(i)]
+        instrlist.append(' '.join([str(v) for v in values]) + '\n')
+    return instrlist
+
+
+def normal_data(instr_num, people_num):
+    instrlist = ln_data(people_num)
     for i in range(randint(int(people_num * 0.7), people_num)):
         instrlist.append(person_instr('ap', i))
     for i in range(instr_num - people_num):
@@ -86,7 +100,7 @@ def normal_data(instr_num, people_num):
 
 
 def crazy_data(instr_num, people_num):
-    instrlist = []
+    instrlist = ln_data(people_num)
     people_num = people_num
     for i in range(instr_num):
         instr = choice(instrs)
@@ -110,4 +124,7 @@ def crazy_data(instr_num, people_num):
 
 
 if __name__ == '__main__':
-    print(generate(300, 100))
+    # print(generate(300, 100))
+    instrs = generate()
+    for entry in instrs:
+        print(entry, end="")
