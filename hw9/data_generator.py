@@ -10,8 +10,10 @@ instrs = ['ap', 'ar', 'ar', 'mr', 'qv',
 # unsupport ln and lnl
 
 
-def generate(crazy=False, instr_num=3000 - 1, people_num=300):  # 互测强度
-    if random() < 0.7 and crazy is False:
+def generate(sp=False, instr_num=3000 - 1, people_num=300):  # 互测强度
+    if sp:
+        return sp_data(instr_num, people_num)
+    elif random() < 0.7:
         return normal_data(instr_num, people_num)
     else:
         return crazy_data(instr_num, people_num)
@@ -75,7 +77,7 @@ def ln_data(people_num):
 
 
 def normal_data(instr_num, people_num):
-    instrlist = ln_data(people_num)
+    instrlist = list()
     for i in range(randint(int(people_num * 0.7), people_num)):
         instrlist.append(person_instr('ap', i))
     for i in range(instr_num - people_num):
@@ -100,7 +102,7 @@ def normal_data(instr_num, people_num):
 
 
 def crazy_data(instr_num, people_num):
-    instrlist = ln_data(people_num)
+    instrlist = list()
     people_num = people_num
     for i in range(instr_num):
         instr = choice(instrs)
@@ -112,6 +114,30 @@ def crazy_data(instr_num, people_num):
         elif instr == 'mr':
             instrlist.append(relation_instr('mr', randint(1, people_num), randint(1, people_num),
                                             randint(-MAX_M_VALUE, MAX_M_VALUE)))
+        elif instr == 'qv':
+            instrlist.append(check_instr('qv', randint(1, people_num), randint(1, people_num)))
+        elif instr == 'qci':
+            instrlist.append(check_instr('qci', randint(1, people_num), randint(1, people_num)))
+        elif instr == 'qbs':
+            instrlist.append(overall_instr('qbs'))
+        elif instr == 'qts':
+            instrlist.append(overall_instr('qts'))
+    return instrlist
+
+
+def sp_data(instr_num, people_num):
+    instrlist = list()
+    people_num = people_num
+    for i in range(instr_num):
+        instr = choice(instrs)
+        if instr == 'ap':
+            instrlist.append(person_instr('ap', randint(1, people_num)))
+        elif instr == 'ar':
+            instrlist.append(
+                relation_instr('ar', randint(1, people_num), randint(1, people_num), randint(1, MAX_VALUE)))
+        elif instr == 'mr':
+            instrlist.append(relation_instr('mr', randint(1, people_num), randint(1, people_num),
+                                            randint(0, MAX_M_VALUE) if random() < 0.3 else -200))
         elif instr == 'qv':
             instrlist.append(check_instr('qv', randint(1, people_num), randint(1, people_num)))
         elif instr == 'qci':
