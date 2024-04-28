@@ -1,5 +1,4 @@
 import re
-
 DEBUG_FLAG = '#'
 
 
@@ -18,11 +17,9 @@ def check(file1='stdout_1.txt', file2='stdout_2.txt', file_in='stdin.txt'):
                 print(f"Line {line_number} in {file_in}: {line_in.rstrip()}")
                 return False
 
-        if sum(1 for line in f1 if not line.startswith(DEBUG_FLAG)) != sum(
-                1 for line in f2 if not line.startswith('#')):
+        if sum(1 for line in f1 if not line.startswith(DEBUG_FLAG)) != sum(1 for line in f2 if not line.startswith('#')):
             return False
     return True
-
 
 if __name__ == '__main__':
     print(check())

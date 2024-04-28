@@ -1,5 +1,5 @@
 import os
-import platform
+from random import randint
 import subprocess
 import multiprocessing
 import shutil
@@ -11,14 +11,14 @@ import sys
 ########## configs you need to modify BEGIN ##########
 
 JAR_NAME = 'EXIA.jar'
-STD_NAME = 'grl.jar'
-PROCESS_COUNT = int(os.cpu_count())
-ITERATIONS = 1000
+STD_NAME = 'EXIA.jar'
+PROCESS_COUNT = 4#int(os.cpu_count())
+ITERATIONS = 200
 DEBUG = True
 
 ########## configs you need to modify END ##########
 
-CACHE_PATH = "cache"
+CACHE_PATH = f"cache-{randint(0,100)}"
 
 def run_iteration(iteration):
     cache_folder = os.path.join(CACHE_PATH, f"iteration_{iteration}")
@@ -48,8 +48,8 @@ def run_iteration(iteration):
                                      stdout=stdout_file_STD, stderr=subprocess.STDOUT)
 
     try:
-        return_code_U   = java_proc.wait(timeout=10)
-        return_code_STD = std_proc.wait(timeout=10)
+        return_code_U   = java_proc.wait(timeout=6)
+        return_code_STD = std_proc.wait(timeout=6)
         if return_code_U is None or return_code_U != 0 or return_code_STD is None or return_code_STD != 0:
             java_proc.kill()
             java_proc.wait()
@@ -99,6 +99,7 @@ def run_iteration(iteration):
 
 
 def run(jar_name):
+    print('processor name: ' + CACHE_PATH)
     pool = multiprocessing.Pool(processes=PROCESS_COUNT, maxtasksperchild=PROCESS_COUNT)
 
     iterations = range(1, ITERATIONS + 1)
@@ -122,6 +123,7 @@ def run(jar_name):
 if __name__ == "__main__":
     # print(os.cpu_count())
     if len(sys.argv) == 2:
-        run(sys.argv[1])
+        if sys.argv[1] != STD_NAME:
+            run(sys.argv[1])
     else:
         run(JAR_NAME)
