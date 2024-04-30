@@ -8,7 +8,7 @@ instrs = ['ap', 'ar', 'mr', 'qv', 'qci', 'qbs', 'qts', 'at', 'att', 'dft', 'qtvs
 
 
 def generate(instr_num =10000, people_num = 50, tag_num = 500):
-    if random() < 0.2:     
+    if random() < 0:     
         return fuck_u_data(instr_num, 100) 
     if random() < 0.8:     
         return normal_data(instr_num, people_num, tag_num)
@@ -37,7 +37,7 @@ def ln_generator(n):
         instr += '\n'
     return instr
 def locate_tag(person_id, people_num, tag_num):
-    return person_id + randint(0,int(tag_num / people_num - 1))
+    return person_id * int(tag_num / people_num)  + randint(0,int(tag_num / people_num - 1))
 
 def person_instr(instr_name, id):
     instr = instr_name
@@ -86,10 +86,10 @@ def zero_arg_instr(instr_name):
 
 def normal_data(instr_num, people_num, tag_num):
     instrlist = []
-    for i in range(randint(int(people_num * 0.7),people_num)):
+    for i in range(1,randint(int(people_num * 0.7),people_num)):
         instrlist.append(person_instr('ap',i))
-    for i in range(randint(int(tag_num * 0.7),tag_num)):
-        instrlist.append(twin_arg_instr('at',int(i / (tag_num / people_num)),i))
+    for i in range(1,randint(int(tag_num * 0.7),tag_num)):
+        instrlist.append(twin_arg_instr('at',int((i + (tag_num / people_num) - 1) / (tag_num / people_num)),i))
     for i in range(instr_num-people_num-tag_num):
         instr = choice(instrs)
         if   instr == 'ap':
@@ -145,8 +145,8 @@ def fuck_u_data(instr_num = 3000, n = 80, tag_num = 120):
     special_instr = ['mr', 'mr','mr','mr','qbs', 'qts', 'att', 'dft', 'qtvs','qtvs', 'qtav','qtav', 'qcs','qcs', 'qsp', 'qsp', 'qsp']
     instrlist = []
     instrlist.append(ln_generator(n))
-    for i in range(randint(int(tag_num * 0.7),tag_num)):
-        instrlist.append(twin_arg_instr('at',int(i / (tag_num / n)),i))
+    for i in range(1,randint(int(tag_num * 0.7),tag_num)):
+        instrlist.append(twin_arg_instr('at',int((i + (tag_num / n) - 1) / (tag_num / n)),i))
     for i in range(instr_num-1 - tag_num):
         instr = choice(special_instr)
         if   instr == 'ap':
@@ -172,6 +172,24 @@ def fuck_u_data(instr_num = 3000, n = 80, tag_num = 120):
             instrlist.append(sigle_arg_instr(instr,randint(1,n)))
     return instrlist
 
+def special_qtvs():
+    instrlist = []
+    n = 760
+    instr_num = 3000
+    instrlist.append(ln_generator(100))
+    for i in range(101, n + 1):
+        instrlist.append(person_instr('ap',i))
+    for i in range(101, n + 1):
+        instrlist.append(triplet_arg_instr('ar',1,i,randint(1,MAX_VALUE)))
+    instrlist.append(twin_arg_instr('at',1,1))
+    for i in range(1,n + 1):
+        instrlist.append(triplet_arg_instr('att',i,1,1))
+    for i in range(1,instr_num - 1 - (n - 100)*2 - n):
+        instrlist.append(twin_arg_instr('qtvs',1,1))
+    return instrlist
+
 if __name__ == '__main__':
-    for entry in fuck_u_data(100,10,10):
+    for entry in normal_data(100,10,20):
             print(entry,end='')
+    # for entry in special_qtvs():
+    #     print(entry,end='')
