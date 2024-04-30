@@ -10,10 +10,10 @@ import sys
 
 ########## configs you need to modify BEGIN ##########
 
-JAR_NAME = 'EXIA.jar'
+JAR_NAME = 'EXIAR3.jar'
 STD_NAME = 'yy.jar'
-PROCESS_COUNT = 8#int(os.cpu_count())
-ITERATIONS = 100
+PROCESS_COUNT = 4#int(os.cpu_count())
+ITERATIONS = 1000
 DEBUG = True
 
 ########## configs you need to modify END ##########

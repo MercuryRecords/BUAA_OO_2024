@@ -7,15 +7,13 @@ instrs = ['ap', 'ar', 'mr', 'qv', 'qci', 'qbs', 'qts', 'at', 'att', 'dft', 'qtvs
 #unsupport ln and lnl
 
 
-def generate(instr_num =3000, people_num = 200, tag_num = 200):
+def generate(instr_num =10000, people_num = 50, tag_num = 500):
     if random() < 0.2:     
         return fuck_u_data(instr_num, 100) 
-    if random() < 0.7:     
+    if random() < 0.8:     
         return normal_data(instr_num, people_num, tag_num)
-    elif random() < 0.9:
-        return crazy_data(instr_num, people_num, tag_num)
     else:
-        return crazy_data(2000, 20, 30)
+        return all_random(instr_num, people_num, tag_num)
     # return crazy_data(100, 20, 10)
 
 def ln_generator(n):
@@ -38,6 +36,8 @@ def ln_generator(n):
             instr += ' '
         instr += '\n'
     return instr
+def locate_tag(person_id, people_num, tag_num):
+    return person_id + randint(0,int(tag_num / people_num - 1))
 
 def person_instr(instr_name, id):
     instr = instr_name
@@ -89,7 +89,7 @@ def normal_data(instr_num, people_num, tag_num):
     for i in range(randint(int(people_num * 0.7),people_num)):
         instrlist.append(person_instr('ap',i))
     for i in range(randint(int(tag_num * 0.7),tag_num)):
-        instrlist.append(twin_arg_instr('at',randint(1,people_num),i))
+        instrlist.append(twin_arg_instr('at',int(i / (tag_num / people_num)),i))
     for i in range(instr_num-people_num-tag_num):
         instr = choice(instrs)
         if   instr == 'ap':
@@ -103,17 +103,20 @@ def normal_data(instr_num, people_num, tag_num):
         elif instr == 'qbs' or instr == 'qts' or instr == 'qcs':
             instrlist.append(zero_arg_instr(instr))
         elif instr == 'at' or instr == 'dt':
-            instrlist.append(twin_arg_instr(instr,randint(1,people_num),randint(1,tag_num)))
+            person_id = randint(1,people_num)
+            instrlist.append(twin_arg_instr(instr,person_id,locate_tag(person_id,people_num,tag_num)))
         elif instr == 'att' or instr == 'dft':
-            instrlist.append(triplet_arg_instr(instr,randint(1,people_num),randint(1,people_num),randint(1,tag_num)))
+            person_id = randint(1,people_num)
+            instrlist.append(triplet_arg_instr(instr,randint(1,people_num),person_id,locate_tag(person_id,people_num,tag_num)))
         elif instr == 'qtvs' or instr == 'qtav':
-            instrlist.append(twin_arg_instr(instr,randint(1,people_num),randint(1,tag_num)))
+            person_id = randint(1,people_num)
+            instrlist.append(twin_arg_instr(instr,person_id,locate_tag(person_id,people_num,tag_num)))
         elif instr == 'qba':
             instrlist.append(sigle_arg_instr(instr,randint(1,people_num)))
     return instrlist
 
 
-def crazy_data(instr_num, people_num, tag_num):
+def all_random(instr_num, people_num, tag_num):
     instrlist = []
     people_num = people_num
     for i in range(instr_num):
@@ -139,11 +142,11 @@ def crazy_data(instr_num, people_num, tag_num):
         return instrlist
 
 def fuck_u_data(instr_num = 3000, n = 80, tag_num = 120):
-    special_instr = ['mr', 'qbs', 'qts', 'att', 'dft', 'qtvs','qtvs', 'qtav','qtav', 'qcs','qcs', 'qsp', 'qsp', 'qsp']
+    special_instr = ['mr', 'mr','mr','mr','qbs', 'qts', 'att', 'dft', 'qtvs','qtvs', 'qtav','qtav', 'qcs','qcs', 'qsp', 'qsp', 'qsp']
     instrlist = []
     instrlist.append(ln_generator(n))
     for i in range(randint(int(tag_num * 0.7),tag_num)):
-        instrlist.append(twin_arg_instr('at',randint(1,n),i))
+        instrlist.append(twin_arg_instr('at',int(i / (tag_num / n)),i))
     for i in range(instr_num-1 - tag_num):
         instr = choice(special_instr)
         if   instr == 'ap':
@@ -157,11 +160,14 @@ def fuck_u_data(instr_num = 3000, n = 80, tag_num = 120):
         elif instr == 'qbs' or instr == 'qts' or instr == 'qcs':
             instrlist.append(zero_arg_instr(instr))
         elif instr == 'at' or instr == 'dt':
-            instrlist.append(twin_arg_instr(instr,randint(1,n),randint(1,tag_num)))
+            person_id = randint(1,n)
+            instrlist.append(twin_arg_instr(instr,person_id,locate_tag(person_id,n,tag_num)))
         elif instr == 'att' or instr == 'dft':
-            instrlist.append(triplet_arg_instr(instr,randint(1,n),randint(1,n),randint(1,tag_num)))
+            person_id = randint(1,n)
+            instrlist.append(triplet_arg_instr(instr,randint(1,n),person_id,locate_tag(person_id,n,tag_num)))
         elif instr == 'qtvs' or instr == 'qtav':
-            instrlist.append(twin_arg_instr(instr,randint(1,n),randint(1,tag_num)))
+            person_id = randint(1,n)
+            instrlist.append(twin_arg_instr(instr,person_id,locate_tag(person_id,n,tag_num)))
         elif instr == 'qba':
             instrlist.append(sigle_arg_instr(instr,randint(1,n)))
     return instrlist
