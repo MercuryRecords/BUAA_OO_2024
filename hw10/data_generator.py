@@ -8,10 +8,13 @@ instrs = ['ap', 'ar', 'mr', 'qv', 'qci', 'qbs', 'qts', 'at', 'att', 'dft', 'qtvs
 
 
 def generate(instr_num =10000, people_num = 50, tag_num = 500):
-    if random() < 0:     
+    k = random()
+    if k < 0.2:     
         return fuck_u_data(instr_num, 100) 
-    if random() < 0.8:     
+    elif k < 0.6:     
         return normal_data(instr_num, people_num, tag_num)
+    elif k < 0.9:
+        return extend_data(instr_num, people_num, tag_num)
     else:
         return all_random(instr_num, people_num, tag_num)
     # return crazy_data(100, 20, 10)
@@ -38,6 +41,9 @@ def ln_generator(n):
     return instr
 def locate_tag(person_id, people_num, tag_num):
     return person_id * int(tag_num / people_num)  + randint(0,int(tag_num / people_num - 1))
+
+def locate_tag_overlapped(person_id, people_num, tag_num):
+    return person_id * int(tag_num / people_num/2)  + randint(0, int(tag_num /people_num - 1))
 
 def person_instr(instr_name, id):
     instr = instr_name
@@ -115,6 +121,37 @@ def normal_data(instr_num, people_num, tag_num):
             instrlist.append(sigle_arg_instr(instr,randint(1,people_num)))
     return instrlist
 
+def extend_data(instr_num, people_num, tag_num):
+    instrlist = []
+    for i in range(1,randint(int(people_num * 0.7),people_num)):
+        instrlist.append(person_instr('ap',i))
+    for i in range(5,randint(int(tag_num * 0.7),tag_num)):
+        instrlist.append(twin_arg_instr('at',int((i / (tag_num / people_num)) -1),i))
+        instrlist.append(twin_arg_instr('at',int((i / (tag_num / people_num)) ), i))
+    for i in range(instr_num-people_num-tag_num):
+        instr = choice(instrs)
+        if   instr == 'ap':
+            instrlist.append(person_instr(instr,randint(1,people_num)))
+        elif instr == 'ar':
+            instrlist.append(triplet_arg_instr(instr,randint(1,people_num),randint(1,people_num),randint(1,MAX_VALUE)))
+        elif instr == 'mr':
+            instrlist.append(triplet_arg_instr(instr,randint(1,people_num),randint(1,people_num),randint(-MAX_M_VALUE,MAX_M_VALUE * 0.3)))
+        elif instr == 'qv' or instr == 'qci' or instr == 'qsp':
+            instrlist.append(twin_arg_instr(instr,randint(1,people_num),randint(1,people_num)))
+        elif instr == 'qbs' or instr == 'qts' or instr == 'qcs':
+            instrlist.append(zero_arg_instr(instr))
+        elif instr == 'at' or instr == 'dt':
+            person_id = randint(1,people_num)
+            instrlist.append(twin_arg_instr(instr,person_id,locate_tag_overlapped(person_id,people_num,tag_num)))
+        elif instr == 'att' or instr == 'dft':
+            person_id = randint(1,people_num)
+            instrlist.append(triplet_arg_instr(instr,randint(1,people_num),person_id,locate_tag_overlapped(person_id,people_num,tag_num)))
+        elif instr == 'qtvs' or instr == 'qtav':
+            person_id = randint(1,people_num)
+            instrlist.append(twin_arg_instr(instr,person_id,locate_tag_overlapped(person_id,people_num,tag_num)))
+        elif instr == 'qba':
+            instrlist.append(sigle_arg_instr(instr,randint(1,people_num)))
+    return instrlist
 
 def all_random(instr_num, people_num, tag_num):
     instrlist = []
@@ -189,7 +226,7 @@ def special_qtvs():
     return instrlist
 
 if __name__ == '__main__':
-    for entry in normal_data(100,10,20):
+    for entry in extend_data(100,10,20):
             print(entry,end='')
     # for entry in special_qtvs():
     #     print(entry,end='')
