@@ -62,11 +62,7 @@ def start_processes(jar_files):
         to_be_deleted = True
 
         # genData
-        stdin_path = os.path.join(cache_folder, f"stdin.txt")
-        with open(stdin_path, "w") as f:
-            tmp_stdin = generate(True)
-            for entry in tmp_stdin:
-                f.write(entry)
+        stdin_path = "stdin.txt"
 
         stdouts = list()
 
@@ -122,11 +118,7 @@ def main():
     directory = os.getcwd()  # 获取当前工作目录
     jar_files = get_jar_files(directory)
     print(jar_files)
-    if not jar_files:
-        return
-
-    for _ in tqdm(range(100)):  # 您希望运行的次数
-        start_processes(jar_files)
+    start_processes(jar_files)
 
 
 if __name__ == "__main__":

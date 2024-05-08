@@ -64,7 +64,7 @@ def start_processes(jar_files):
         # genData
         stdin_path = os.path.join(cache_folder, f"stdin.txt")
         with open(stdin_path, "w") as f:
-            tmp_stdin = generate(True)
+            tmp_stdin = generate()
             for entry in tmp_stdin:
                 f.write(entry)
 

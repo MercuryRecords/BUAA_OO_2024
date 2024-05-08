@@ -3,8 +3,8 @@ from random import choice, randint, random, sample
 MAX_VALUE = 200
 MAX_M_VALUE = 200
 MAX_AGE = 200
-instrs = ['ap', 'ar', 'ar', 'mr', 'qv',
-          'qci', 'qbs', 'qts']
+instrs = ['ap', 'mr', 'mr', 'mr', 'mr', 'mr', 'qv',
+          'qci', 'qbs', 'qbs', 'qbs', 'qts', 'qts', 'qts']
 
 
 # unsupport ln and lnl
@@ -71,7 +71,7 @@ def ln_data(people_num):
     instrlist.append(' '.join([str(randint(0, MAX_AGE)) for _ in sample_list]) + '\n')
     # 接下来是 n-1 行关系数据
     for i in range(1, sample_num):
-        values = [randint(1, MAX_VALUE) if random() < 0.9 else 0 for _ in range(i)]
+        values = [1 if random() < 0.99 else 0 for _ in range(i)]
         instrlist.append(' '.join([str(v) for v in values]) + '\n')
     return instrlist
 
@@ -126,7 +126,7 @@ def crazy_data(instr_num, people_num):
 
 
 def sp_data(instr_num, people_num):
-    instrlist = list()
+    instrlist = ln_data(people_num)
     people_num = people_num
     for i in range(instr_num):
         instr = choice(instrs)
@@ -137,7 +137,7 @@ def sp_data(instr_num, people_num):
                 relation_instr('ar', randint(1, people_num), randint(1, people_num), randint(1, MAX_VALUE)))
         elif instr == 'mr':
             instrlist.append(relation_instr('mr', randint(1, people_num), randint(1, people_num),
-                                            randint(0, MAX_M_VALUE) if random() < 0.3 else -200))
+                                            randint(1, MAX_M_VALUE) if random() < 0.3 else -200))
         elif instr == 'qv':
             instrlist.append(check_instr('qv', randint(1, people_num), randint(1, people_num)))
         elif instr == 'qci':
@@ -151,6 +151,6 @@ def sp_data(instr_num, people_num):
 
 if __name__ == '__main__':
     # print(generate(300, 100))
-    instrs = generate()
+    instrs = generate(sp=True)
     for entry in instrs:
         print(entry, end="")
