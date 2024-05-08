@@ -1,7 +1,6 @@
 import os
 import subprocess
 import multiprocessing
-import shutil
 from random import randint
 
 from tqdm import tqdm
@@ -20,7 +19,7 @@ def process_jar_file(jar_file_path, cache_folder, stdin_path):
                                          stdout=stdout_file, stderr=subprocess.STDOUT)
 
     try:
-        return_code = java_proc.wait(timeout=8)
+        return_code = java_proc.wait(timeout=5)
         if return_code is None or return_code != 0:
             java_proc.kill()
             java_proc.wait()

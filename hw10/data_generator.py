@@ -12,14 +12,18 @@ instrs = ['ap', 'ar', 'mr', 'qv', 'qci', 'qbs', 'qts', 'at', 'att', 'dft', 'qtvs
 
 def generate(instr_num=2900, people_num=100, tag_num=500):
     k = random()
-    if k < 0.4:
+    if k < 0.2:
         return fuck_u_data(instr_num, people_num)
-    elif k < 0.6:
+    elif k < 0.4:
         return normal_data(instr_num, people_num, tag_num)
-    elif k < 0.9:
+    elif k < 0.6:
         return extend_data(instr_num, people_num, tag_num)
-    else:
+    elif k < 0.8:
         return all_random(instr_num, people_num, tag_num)
+    elif k < 0.9:
+        return special_qtvs()
+    else:
+        return special_hack_delay_rebuild()
     # return crazy_data(100, 20, 10)
 
 
@@ -268,7 +272,7 @@ def special_hack_delay_rebuild():
     i = 1
     instr_num = 3000
     instrlist.append(ln_generator(100))
-    while i < 3000:
+    while i < instr_num:
         instrlist.append(triplet_arg_instr('mr', 11, 57, -200))
         i += 1
         instrlist.append(zero_arg_instr('qbs'))
