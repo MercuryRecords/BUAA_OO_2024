@@ -2,7 +2,7 @@ import os
 import statistics
 import subprocess
 from tqdm import tqdm
-from data_generator import generate
+from data_generator import generate, special_hack_delay_rebuild
 
 
 def run(jar_file_name, stdin_path):
@@ -29,11 +29,12 @@ def get_jar_files(directory):
     return jar_files
 
 
-def benchmark(jar_files):
+def benchmark(jar_files, i):
     jar_dict = dict()
 
-    stdin_path = "hack.txt"
-    # with open("stdin.txt", "w") as f:
+    # stdin_path = f"stdin_sp.txt"
+    stdin_path = f"stdin_51.txt"
+    # with open(stdin_path, "w") as f:
     #     tmp_stdin = generate()
     #     for entry in tmp_stdin:
     #         f.write(entry)
@@ -60,8 +61,8 @@ if __name__ == "__main__":
     jar_files = get_jar_files(directory)
     total_jar_dict = {jar_file: [] for jar_file in jar_files}  # 初始化累积字典
 
-    for _ in tqdm(range(1)):
-        current_jar_dict = benchmark(jar_files)
+    for i in tqdm(range(1)):
+        current_jar_dict = benchmark(jar_files, i)
         for jar_file, avg_cost in current_jar_dict.items():
             total_jar_dict[jar_file].append(avg_cost)  # 将当前的平均成本追加到列表中
 

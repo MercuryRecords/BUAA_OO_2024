@@ -101,7 +101,8 @@ def start_processes(jar_files):
                         fout.write(fin.read())
 
         if to_be_deleted:
-            shutil.rmtree(cache_folder)
+            # shutil.rmtree(cache_folder)
+            pass
         else:
             return None
         pass
@@ -125,7 +126,7 @@ def main():
     if not jar_files:
         return
 
-    for _ in tqdm(range(100)):  # 您希望运行的次数
+    for _ in tqdm(range(1)):  # 您希望运行的次数
         start_processes(jar_files)
 
 

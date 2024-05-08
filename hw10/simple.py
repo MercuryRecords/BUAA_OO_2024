@@ -62,7 +62,7 @@ def start_processes(jar_files):
         to_be_deleted = True
 
         # genData
-        stdin_path = "stdin.txt"
+        stdin_path = "stdin_51.txt"
 
         stdouts = list()
 
