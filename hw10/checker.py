@@ -1,11 +1,18 @@
 import re
+import chardet
 
 DEBUG_FLAG = '#'
 
 
+def detect_encoding(file_path):
+    with open(file_path, 'rb') as f:
+        result = chardet.detect(f.read())
+    return result['encoding']
+
+
 def check(file1='stdout_1.txt', file2='stdout_2.txt', file_in='stdin.txt'):
     line_number = 0
-    with open(file1, 'r') as f1, open(file2, 'r') as f2, open(file_in, 'r') as fin:
+    with open(file1, 'r', encoding=detect_encoding(file1)) as f1, open(file2, 'r', encoding=detect_encoding(file1)) as f2, open(file_in, 'r', encoding=detect_encoding(file1)) as fin:
         for line_in in fin:
             line_number += 1
             # 忽略以 # 开头的行
