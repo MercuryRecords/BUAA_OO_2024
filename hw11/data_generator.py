@@ -4,7 +4,7 @@ MAX_VALUE = 200
 MAX_M_VALUE = 200
 MAX_AGE = 200
 MAX_LIMIT = 20
-instrs = ['ap', 'ar', 'mr', 'qv', 'qci', 'qbs', 'qts', 'at', 'att', 'dt','dft', 'qtvs', 'qtav', 'qba', 'qcs', 'qsp','am' ,'am' ,'am' , 'sm', 'qsv', 'qrm', 'arem', 'anm', 'sei', 'qp', 'dce', 'qm','am' ,'am' ,'am' , 'sm', 'qsv', 'qrm', 'arem', 'anm', 'sei', 'qp', 'dce', 'qm']
+instrs = ['ap', 'ar', 'mr', 'qv', 'qci', 'qbs', 'qts', 'at', 'att', 'dt','dft', 'qtvs', 'qtav', 'qba', 'qcs', 'qsp','am' ,'am' ,'am' , 'cn','sm', 'qsv', 'qrm', 'arem', 'anm', 'sei', 'qp', 'dce', 'qm','am' ,'am' ,'am' , 'cn','sm', 'qsv', 'qrm', 'arem', 'anm', 'sei', 'qp', 'dce', 'qm']
 messages = set()
 relations = {}
 #unsupport ln and lnl
