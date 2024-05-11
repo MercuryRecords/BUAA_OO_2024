@@ -9,6 +9,8 @@ instrs = ['ap', 'ar', 'mr', 'qv', 'qci', 'qbs', 'qts', 'at', 'att', 'dt','dft', 
 
 def generate(instr_num =10000, people_num = 50, tag_num = 500):
     k = random()
+    if k < 0.1:
+        return special_qtvs_I()
     if k < 0.2:     
         return fuck_u_data(instr_num, 100) 
     elif k < 0.6:     
@@ -209,10 +211,8 @@ def fuck_u_data(instr_num = 3000, n = 80, tag_num = 120):
             instrlist.append(sigle_arg_instr(instr,randint(1,n)))
     return instrlist
 
-def special_qtvs_I():
+def special_qtvs_I(instr_num = 10000, n = 2000):
     instrlist = []
-    n = 760
-    instr_num = 3000
     instrlist.append(ln_generator(100))
     for i in range(101, n + 1):
         instrlist.append(person_instr('ap',i))
@@ -221,8 +221,9 @@ def special_qtvs_I():
     instrlist.append(twin_arg_instr('at',1,1))
     for i in range(1,n + 1):
         instrlist.append(triplet_arg_instr('att',i,1,1))
-    for i in range(1,instr_num - 1 - (n - 100)*2 - n):
+    for i in range(1,instr_num - 2 - (n - 100)*2 - n):
         instrlist.append(twin_arg_instr('qtvs',1,1))
+    instrlist.append(twin_arg_instr('qtav',1,1))
     return instrlist
 
 def special_qtvs_II():
@@ -243,7 +244,7 @@ def special_qtvs_II():
     return instrlist
 
 if __name__ == '__main__':
-    for entry in extend_data(100,10,20):
-            print(entry,end='')
-    # for entry in special_qtvs():
-    #     print(entry,end='')
+    # for entry in extend_data(100,10,20):
+    #         print(entry,end='')
+    for entry in special_qtvs_I():
+        print(entry,end='')
