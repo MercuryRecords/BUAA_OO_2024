@@ -111,8 +111,8 @@ def run(jar_name):
                 print(result[0])
                 with open("res.txt", "a+") as f:
                     f.write(result[0] + "\n")
-            # else:
-            #     shutil.rmtree(result[1])
+            else:
+                shutil.rmtree(result[1])
     pool.close()
     pool.join()
     if not os.listdir(CACHE_PATH):
